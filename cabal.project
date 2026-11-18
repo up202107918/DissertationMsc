@@ -1,0 +1,6 @@
+packages:
+    .
+    ../liquidhaskell
+    ../liquidhaskell/liquid-prelude
+    ../liquidhaskell/liquidhaskell-boot
+    ../liquidhaskell/liquid-fixpoint 

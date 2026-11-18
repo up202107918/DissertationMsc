@@ -1,0 +1,482 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+<title>AVL2.hs</title>
+</head>
+<head>
+<link type='text/css' rel='stylesheet' href='syntax.css' />
+</head>
+
+<body>
+<hr>
+Put mouse over identifiers to see inferred types
+<pre><span class=hs-linenum>  1: </span><span class='hs-comment'>{-# OPTIONS_GHC -fplugin=LiquidHaskell #-}</span>
+<span class=hs-linenum>  2: </span><span class='hs-keyword'>{-@</span> <span class='hs-conid'>LIQUID</span> <span class='hs-str'>"--no-termination"</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum>  3: </span>
+<span class=hs-linenum>  4: </span><span class='hs-keyword'>module</span> <span class='hs-conid'>AVL2</span> <span class='hs-keyword'>where</span>
+<span class=hs-linenum>  5: </span>
+<span class=hs-linenum>  6: </span><span class='hs-keyword'>import</span> <span class='hs-conid'>Prelude</span> <span class='hs-varid'>hiding</span> <span class='hs-layout'>(</span><span class='hs-varid'>max</span><span class='hs-layout'>)</span>
+<span class=hs-linenum>  7: </span><span class='hs-keyword'>import</span> <span class='hs-keyword'>qualified</span> <span class='hs-conid'>Data.Set</span> <span class='hs-keyword'>as</span> <span class='hs-conid'>S</span> 
+<span class=hs-linenum>  8: </span>
+<span class=hs-linenum>  9: </span><span class='hs-comment'>-- | Trees with value less than X</span>
+<span class=hs-linenum> 10: </span><span class='hs-keyword'>{-@</span> <span class='hs-keyword'>type</span> <span class='hs-conid'>AVLL</span> <span class='hs-varid'>a</span> <span class='hs-conid'>X</span> <span class='hs-keyglyph'>=</span> <span class='hs-conid'>AVL</span> <span class='hs-layout'>{</span><span class='hs-varid'>v</span><span class='hs-conop'>:</span><span class='hs-varid'>a</span> <span class='hs-keyglyph'>|</span> <span class='hs-varid'>v</span> <span class='hs-varop'>&lt;</span> <span class='hs-conid'>X</span><span class='hs-layout'>}</span>  <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 11: </span>
+<span class=hs-linenum> 12: </span><span class='hs-comment'>-- | Trees with value greater than X</span>
+<span class=hs-linenum> 13: </span><span class='hs-keyword'>{-@</span> <span class='hs-keyword'>type</span> <span class='hs-conid'>AVLR</span> <span class='hs-varid'>a</span> <span class='hs-conid'>X</span> <span class='hs-keyglyph'>=</span> <span class='hs-conid'>AVL</span> <span class='hs-layout'>{</span><span class='hs-varid'>v</span><span class='hs-conop'>:</span><span class='hs-varid'>a</span> <span class='hs-keyglyph'>|</span> <span class='hs-varid'>v</span> <span class='hs-varop'>&gt;</span> <span class='hs-conid'>X</span><span class='hs-layout'>}</span>  <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 14: </span>
+<span class=hs-linenum> 15: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>measure</span> <span class='hs-varid'>realHeight</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 16: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>realHeight</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>AVL</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Nat</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 17: </span><span class='hs-definition'>realHeight</span>                <span class='hs-keyglyph'>::</span> <span class='hs-conid'>AVL</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span>
+<span class=hs-linenum> 18: </span><a class=annot href="#"><span class=annottext>forall a .
+lq_tmp$x##2228:(AVL2.AVL a) -&gt; {VV##0 : GHC.Internal.Types.Int | VV##0 == AVL2.realHeight lq_tmp$x##2228
+                                                                 &amp;&amp; VV##0 &gt;= 0}</span><span class='hs-definition'>realHeight</span></a> <span class='hs-conid'>Leaf</span>           <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##2245 : GHC.Internal.Prim.Int# | lq_tmp$x##2245 == 0}</span><span class='hs-num'>0</span></a>
+<span class=hs-linenum> 19: </span><span class='hs-definition'>realHeight</span> <span class='hs-layout'>(</span><span class='hs-conid'>Node</span> <span class='hs-keyword'>_</span> <span class='hs-varid'>l</span> <span class='hs-varid'>r</span> <span class='hs-keyword'>_</span><span class='hs-layout'>)</span> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>forall a .
+lq_tmp$x##2229:(AVL2.AVL a) -&gt; lq_tmp$x##2230:(AVL2.AVL a) -&gt; {VV##0 : GHC.Internal.Types.Int | VV##0 == 1 + (if AVL2.realHeight lq_tmp$x##2229 &gt; AVL2.realHeight lq_tmp$x##2230 then AVL2.realHeight lq_tmp$x##2229 else AVL2.realHeight lq_tmp$x##2230)
+                                                                                                &amp;&amp; VV##0 &gt;= 0
+                                                                                                &amp;&amp; VV##0 &gt;= 1}</span><span class='hs-varid'>nodeHeight</span></a> <a class=annot href="#"><span class=annottext>{lq_tmp$x##2301 : (AVL2.AVL {lq_tmp$x##2300 : a | lq_tmp$x##2300 &lt; ds_d1sZ}) | lq_tmp$x##2301 == l##a15X
+                                                                               &amp;&amp; AVL2.getHeight lq_tmp$x##2301 &gt;= 0}</span><span class='hs-varid'>l</span></a> <a class=annot href="#"><span class=annottext>{lq_tmp$x##2303 : (AVL2.AVL {lq_tmp$x##2302 : a | lq_tmp$x##2302 &gt; ds_d1sZ}) | lq_tmp$x##2303 == r##a15Y
+                                                                               &amp;&amp; AVL2.getHeight lq_tmp$x##2303 &gt;= 0
+                                                                               &amp;&amp; 0 - 1 &lt;= AVL2.realHeight l##a15X - AVL2.realHeight lq_tmp$x##2303
+                                                                               &amp;&amp; AVL2.realHeight l##a15X - AVL2.realHeight lq_tmp$x##2303 &lt;= 1}</span><span class='hs-varid'>r</span></a>
+<span class=hs-linenum> 20: </span>
+<span class=hs-linenum> 21: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>inline</span> <span class='hs-varid'>nodeHeight</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 22: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>nodeHeight</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>AVL</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>AVL</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-keyword'>{x:</span><span class='hs-conid'>Nat</span> <span class='hs-keyword'>| x &gt;= 1}</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 23: </span><span class='hs-definition'>nodeHeight</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>AVL</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>AVL</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span>
+<span class=hs-linenum> 24: </span><a class=annot href="#"><span class=annottext>forall a .
+lq_tmp$x##2229:(AVL2.AVL a) -&gt; lq_tmp$x##2230:(AVL2.AVL a) -&gt; {VV##0 : GHC.Internal.Types.Int | VV##0 == 1 + (if AVL2.realHeight lq_tmp$x##2229 &gt; AVL2.realHeight lq_tmp$x##2230 then AVL2.realHeight lq_tmp$x##2229 else AVL2.realHeight lq_tmp$x##2230)
+                                                                                                &amp;&amp; VV##0 &gt;= 0
+                                                                                                &amp;&amp; VV##0 &gt;= 1}</span><span class='hs-definition'>nodeHeight</span></a> <a class=annot href="#"><span class=annottext>(AVL2.AVL a)</span><span class='hs-varid'>l</span></a> <a class=annot href="#"><span class=annottext>(AVL2.AVL a)</span><span class='hs-varid'>r</span></a> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##2331 : GHC.Internal.Types.Int | lq_tmp$x##2331 == (lq_anf$##7205759403792799503##d1xd : int)}</span><span class='hs-num'>1</span></a> <span class='hs-varop'>+</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##2338 : GHC.Internal.Types.Int | lq_tmp$x##2338 == (if hl##a161 &gt; hr##a162 then hl##a161 else hr##a162)
+                                           &amp;&amp; lq_tmp$x##2338 &gt;= 0
+                                           &amp;&amp; lq_tmp$x##2338 &gt;= hl##a161
+                                           &amp;&amp; lq_tmp$x##2338 &gt;= hr##a162}</span><span class='hs-varid'>max</span></a> <a class=annot href="#"><span class=annottext>{lq_tmp$x##2343 : GHC.Internal.Types.Int | lq_tmp$x##2343 == hl##a161
+                                           &amp;&amp; lq_tmp$x##2343 == AVL2.realHeight l##a15Z
+                                           &amp;&amp; lq_tmp$x##2343 &gt;= 0}</span><span class='hs-varid'>hl</span></a> <a class=annot href="#"><span class=annottext>{lq_tmp$x##2344 : GHC.Internal.Types.Int | lq_tmp$x##2344 == hr##a162
+                                           &amp;&amp; lq_tmp$x##2344 == AVL2.realHeight r##a160
+                                           &amp;&amp; lq_tmp$x##2344 &gt;= 0}</span><span class='hs-varid'>hr</span></a>
+<span class=hs-linenum> 25: </span>  <span class='hs-keyword'>where</span>
+<span class=hs-linenum> 26: </span>    <a class=annot href="#"><span class=annottext>{lq_tmp$x##2319 : GHC.Internal.Types.Int | lq_tmp$x##2319 == AVL2.realHeight l##a15Z
+                                           &amp;&amp; lq_tmp$x##2319 &gt;= 0}</span><span class='hs-varid'>hl</span></a>         <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>forall a .
+lq_tmp$x##2228:(AVL2.AVL a) -&gt; {VV##0 : GHC.Internal.Types.Int | VV##0 == AVL2.realHeight lq_tmp$x##2228
+                                                                 &amp;&amp; VV##0 &gt;= 0}</span><span class='hs-varid'>realHeight</span></a> <a class=annot href="#"><span class=annottext>{lq_tmp$x##2326 : (AVL2.AVL a) | lq_tmp$x##2326 == l##a15Z
+                                 &amp;&amp; AVL2.getHeight lq_tmp$x##2326 &gt;= 0}</span><span class='hs-varid'>l</span></a>
+<span class=hs-linenum> 27: </span>    <a class=annot href="#"><span class=annottext>{lq_tmp$x##2308 : GHC.Internal.Types.Int | lq_tmp$x##2308 == AVL2.realHeight r##a160
+                                           &amp;&amp; lq_tmp$x##2308 &gt;= 0}</span><span class='hs-varid'>hr</span></a>         <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>forall a .
+lq_tmp$x##2228:(AVL2.AVL a) -&gt; {VV##0 : GHC.Internal.Types.Int | VV##0 == AVL2.realHeight lq_tmp$x##2228
+                                                                 &amp;&amp; VV##0 &gt;= 0}</span><span class='hs-varid'>realHeight</span></a> <a class=annot href="#"><span class=annottext>{lq_tmp$x##2315 : (AVL2.AVL a) | lq_tmp$x##2315 == r##a160
+                                 &amp;&amp; AVL2.getHeight lq_tmp$x##2315 &gt;= 0}</span><span class='hs-varid'>r</span></a>
+<span class=hs-linenum> 28: </span>
+<span class=hs-linenum> 29: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>inline</span> <span class='hs-varid'>max</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 30: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>max</span> <span class='hs-keyglyph'>::</span> <span class='hs-varid'>x</span><span class='hs-conop'>:</span><span class='hs-conid'>Nat</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-varid'>y</span><span class='hs-conop'>:</span><span class='hs-conid'>Nat</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-keyword'>{v:</span><span class='hs-conid'>Nat</span> <span class='hs-keyword'>| v &gt;= x &amp;&amp; v &gt;= y}</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 31: </span><span class='hs-definition'>max</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Int</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span>
+<span class=hs-linenum> 32: </span><a class=annot href="#"><span class=annottext>lq_tmp$x##2097:{VV##0 : GHC.Internal.Types.Int | VV##0 &gt;= 0} -&gt; lq_tmp$x##2098:{VV##0 : GHC.Internal.Types.Int | VV##0 &gt;= 0} -&gt; {VV##0 : GHC.Internal.Types.Int | VV##0 == (if lq_tmp$x##2097 &gt; lq_tmp$x##2098 then lq_tmp$x##2097 else lq_tmp$x##2098)
+                                                                                                                                                                  &amp;&amp; VV##0 &gt;= 0
+                                                                                                                                                                  &amp;&amp; VV##0 &gt;= lq_tmp$x##2097
+                                                                                                                                                                  &amp;&amp; VV##0 &gt;= lq_tmp$x##2098}</span><span class='hs-definition'>max</span></a> <a class=annot href="#"><span class=annottext>{VV##0 : GHC.Internal.Types.Int | VV##0 &gt;= 0}</span><span class='hs-varid'>x</span></a> <a class=annot href="#"><span class=annottext>{VV##0 : GHC.Internal.Types.Int | VV##0 &gt;= 0}</span><span class='hs-varid'>y</span></a> <span class='hs-keyglyph'>=</span> <span class='hs-keyword'>if</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##2117 : GHC.Internal.Types.Int | lq_tmp$x##2117 == x##a18I
+                                           &amp;&amp; lq_tmp$x##2117 &gt;= 0}</span><span class='hs-varid'>x</span></a> <span class='hs-varop'>&gt;</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##2118 : GHC.Internal.Types.Int | lq_tmp$x##2118 == y##a18J
+                                           &amp;&amp; lq_tmp$x##2118 &gt;= 0}</span><span class='hs-varid'>y</span></a> <span class='hs-keyword'>then</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##2133 : GHC.Internal.Types.Int | lq_tmp$x##2133 == x##a18I
+                                           &amp;&amp; lq_tmp$x##2133 &gt;= 0}</span><span class='hs-varid'>x</span></a> <span class='hs-keyword'>else</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##2127 : GHC.Internal.Types.Int | lq_tmp$x##2127 == y##a18J
+                                           &amp;&amp; lq_tmp$x##2127 &gt;= 0}</span><span class='hs-varid'>y</span></a>
+<span class=hs-linenum> 33: </span>
+<span class=hs-linenum> 34: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>inline</span> <span class='hs-varid'>isLeaf</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 35: </span><span class='hs-definition'>isLeaf</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>AVL</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Bool</span>
+<span class=hs-linenum> 36: </span><a class=annot href="#"><span class=annottext>forall a .
+lq_tmp$x##1012:(AVL2.AVL a) -&gt; {VV : GHC.Internal.Types.Bool | VV &lt;=&gt; (if is$AVL2.Leaf lq_tmp$x##1012 then true else false)}</span><span class='hs-definition'>isLeaf</span></a> <span class='hs-conid'>Leaf</span> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1025 : GHC.Internal.Types.Bool | lq_tmp$x##1025
+                                            &amp;&amp; lq_tmp$x##1025 == GHC.Internal.Types.True}</span><span class='hs-conid'>True</span></a>
+<span class=hs-linenum> 37: </span><span class='hs-definition'>isLeaf</span> <span class='hs-keyword'>_</span>    <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1062 : GHC.Internal.Types.Bool | not lq_tmp$x##1062
+                                            &amp;&amp; lq_tmp$x##1062 == GHC.Internal.Types.False}</span><span class='hs-conid'>False</span></a>
+<span class=hs-linenum> 38: </span>
+<span class=hs-linenum> 39: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>inline</span> <span class='hs-varid'>isReal</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 40: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>isReal</span> <span class='hs-keyglyph'>::</span> <span class='hs-varid'>v</span><span class='hs-conop'>:</span><span class='hs-conid'>Nat</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-varid'>l</span><span class='hs-conop'>:</span><span class='hs-conid'>AVL</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-varid'>r</span><span class='hs-conop'>:</span><span class='hs-conid'>AVL</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Bool</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 41: </span><a class=annot href="#"><span class=annottext>forall a .
+lq_tmp$x##2484:{VV##0 : GHC.Internal.Types.Int | VV##0 &gt;= 0} -&gt; lq_tmp$x##2485:(AVL2.AVL a) -&gt; lq_tmp$x##2486:(AVL2.AVL a) -&gt; {VV##1 : GHC.Internal.Types.Bool | VV##1 &lt;=&gt; lq_tmp$x##2484 == 1 + (if AVL2.realHeight lq_tmp$x##2485 &gt; AVL2.realHeight lq_tmp$x##2486 then AVL2.realHeight lq_tmp$x##2485 else AVL2.realHeight lq_tmp$x##2486)}</span><span class='hs-definition'>isReal</span></a> <a class=annot href="#"><span class=annottext>{VV##0 : GHC.Internal.Types.Int | VV##0 &gt;= 0}</span><span class='hs-varid'>v</span></a> <a class=annot href="#"><span class=annottext>(AVL2.AVL a)</span><span class='hs-varid'>l</span></a> <a class=annot href="#"><span class=annottext>(AVL2.AVL a)</span><span class='hs-varid'>r</span></a> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##2523 : GHC.Internal.Types.Int | lq_tmp$x##2523 == v##a18N
+                                           &amp;&amp; lq_tmp$x##2523 &gt;= 0}</span><span class='hs-varid'>v</span></a> <span class='hs-varop'>==</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##2494 : GHC.Internal.Types.Int | lq_tmp$x##2494 == 1 + (if AVL2.realHeight l##a18O &gt; AVL2.realHeight r##a18P then AVL2.realHeight l##a18O else AVL2.realHeight r##a18P)
+                                           &amp;&amp; lq_tmp$x##2494 &gt;= 0
+                                           &amp;&amp; lq_tmp$x##2494 &gt;= 1}</span><span class='hs-varid'>nodeHeight</span></a> <a class=annot href="#"><span class=annottext>{lq_tmp$x##2503 : (AVL2.AVL a) | lq_tmp$x##2503 == l##a18O
+                                 &amp;&amp; AVL2.getHeight lq_tmp$x##2503 &gt;= 0
+                                 &amp;&amp; AVL2.realHeight lq_tmp$x##2503 &gt;= 0}</span><span class='hs-varid'>l</span></a> <a class=annot href="#"><span class=annottext>{lq_tmp$x##2505 : (AVL2.AVL a) | lq_tmp$x##2505 == r##a18P
+                                 &amp;&amp; AVL2.getHeight lq_tmp$x##2505 &gt;= 0
+                                 &amp;&amp; AVL2.realHeight lq_tmp$x##2505 &gt;= 0}</span><span class='hs-varid'>r</span></a>
+<span class=hs-linenum> 42: </span>
+<span class=hs-linenum> 43: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>inline</span> <span class='hs-varid'>isBal</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 44: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>isBal</span> <span class='hs-keyglyph'>::</span> <span class='hs-varid'>l</span><span class='hs-conop'>:</span><span class='hs-conid'>AVL</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-varid'>r</span><span class='hs-conop'>:</span><span class='hs-conid'>AVL</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-varid'>n</span><span class='hs-conop'>:</span><span class='hs-conid'>Nat</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Bool</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 45: </span><a class=annot href="#"><span class=annottext>forall a a .
+lq_tmp$x##2363:(AVL2.AVL a) -&gt; lq_tmp$x##2364:(AVL2.AVL a) -&gt; lq_tmp$x##2365:{VV##1 : GHC.Internal.Types.Int | VV##1 &gt;= 0} -&gt; {VV##1 : GHC.Internal.Types.Bool | VV##1 &lt;=&gt; 0 - lq_tmp$x##2365 &lt;= AVL2.realHeight lq_tmp$x##2363 - AVL2.realHeight lq_tmp$x##2364
+                                                                                                                                                                           &amp;&amp; AVL2.realHeight lq_tmp$x##2363 - AVL2.realHeight lq_tmp$x##2364 &lt;= lq_tmp$x##2365}</span><span class='hs-definition'>isBal</span></a> <a class=annot href="#"><span class=annottext>(AVL2.AVL a)</span><span class='hs-varid'>l</span></a> <a class=annot href="#"><span class=annottext>(AVL2.AVL a)</span><span class='hs-varid'>r</span></a> <a class=annot href="#"><span class=annottext>{VV##1 : GHC.Internal.Types.Int | VV##1 &gt;= 0}</span><span class='hs-varid'>n</span></a> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##2411 : GHC.Internal.Types.Int | lq_tmp$x##2411 == (lq_anf$##7205759403792799508##d1xi : int)}</span><span class='hs-num'>0</span></a> <span class='hs-comment'>-</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##2431 : GHC.Internal.Types.Int | lq_tmp$x##2431 == n##a18V
+                                           &amp;&amp; lq_tmp$x##2431 &gt;= 0}</span><span class='hs-varid'>n</span></a> <span class='hs-varop'>&lt;=</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##2450 : GHC.Internal.Types.Int | lq_tmp$x##2450 == d##a18W
+                                           &amp;&amp; lq_tmp$x##2450 == lq_anf$##7205759403792799506##d1xg - lq_anf$##7205759403792799507##d1xh}</span><span class='hs-varid'>d</span></a> <span class='hs-varop'>&amp;&amp;</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##2468 : GHC.Internal.Types.Int | lq_tmp$x##2468 == d##a18W
+                                           &amp;&amp; lq_tmp$x##2468 == lq_anf$##7205759403792799506##d1xg - lq_anf$##7205759403792799507##d1xh}</span><span class='hs-varid'>d</span></a> <span class='hs-varop'>&lt;=</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##2469 : GHC.Internal.Types.Int | lq_tmp$x##2469 == n##a18V
+                                           &amp;&amp; lq_tmp$x##2469 &gt;= 0}</span><span class='hs-varid'>n</span></a>
+<span class=hs-linenum> 46: </span>  <span class='hs-keyword'>where</span>
+<span class=hs-linenum> 47: </span>    <a class=annot href="#"><span class=annottext>{lq_tmp$x##2402 : GHC.Internal.Types.Int | lq_tmp$x##2402 == lq_anf$##7205759403792799506##d1xg - lq_anf$##7205759403792799507##d1xh}</span><span class='hs-varid'>d</span></a> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##2371 : GHC.Internal.Types.Int | lq_tmp$x##2371 == AVL2.realHeight l##a18T
+                                           &amp;&amp; lq_tmp$x##2371 &gt;= 0}</span><span class='hs-varid'>realHeight</span></a> <a class=annot href="#"><span class=annottext>{lq_tmp$x##2378 : (AVL2.AVL a) | lq_tmp$x##2378 == l##a18T
+                                 &amp;&amp; AVL2.getHeight lq_tmp$x##2378 &gt;= 0
+                                 &amp;&amp; AVL2.realHeight lq_tmp$x##2378 &gt;= 0}</span><span class='hs-varid'>l</span></a> <span class='hs-comment'>-</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##2382 : GHC.Internal.Types.Int | lq_tmp$x##2382 == AVL2.realHeight r##a18U
+                                           &amp;&amp; lq_tmp$x##2382 &gt;= 0}</span><span class='hs-varid'>realHeight</span></a> <a class=annot href="#"><span class=annottext>{lq_tmp$x##2389 : (AVL2.AVL a) | lq_tmp$x##2389 == r##a18U
+                                 &amp;&amp; AVL2.getHeight lq_tmp$x##2389 &gt;= 0
+                                 &amp;&amp; AVL2.realHeight lq_tmp$x##2389 &gt;= 0}</span><span class='hs-varid'>r</span></a>
+<span class=hs-linenum> 48: </span>
+<span class=hs-linenum> 49: </span><span class='hs-keyword'>{-@</span> <span class='hs-keyword'>data</span> <span class='hs-conid'>AVL</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>=</span> <span class='hs-conid'>Leaf</span>
+<span class=hs-linenum> 50: </span>               <span class='hs-keyglyph'>|</span> <span class='hs-conid'>Node</span> <span class='hs-layout'>{</span> <span class='hs-varid'>key</span> <span class='hs-keyglyph'>::</span> <span class='hs-varid'>a</span>
+<span class=hs-linenum> 51: </span>                      <span class='hs-layout'>,</span> <span class='hs-varid'>l</span>   <span class='hs-keyglyph'>::</span> <span class='hs-conid'>AVLL</span> <span class='hs-varid'>a</span> <span class='hs-varid'>key</span>
+<span class=hs-linenum> 52: </span>                      <span class='hs-layout'>,</span> <span class='hs-varid'>r</span>   <span class='hs-keyglyph'>::</span> <span class='hs-layout'>{</span><span class='hs-varid'>v</span><span class='hs-conop'>:</span><span class='hs-conid'>AVLR</span> <span class='hs-varid'>a</span> <span class='hs-varid'>key</span> <span class='hs-keyglyph'>|</span> <span class='hs-varid'>isBal</span> <span class='hs-varid'>l</span> <span class='hs-varid'>v</span> <span class='hs-num'>1</span><span class='hs-layout'>}</span>
+<span class=hs-linenum> 53: </span>                      <span class='hs-layout'>,</span> <span class='hs-varid'>ah</span> <span class='hs-keyglyph'>::</span> <span class='hs-layout'>{</span><span class='hs-varid'>v</span><span class='hs-conop'>:</span><span class='hs-conid'>Nat</span> <span class='hs-keyglyph'>|</span> <span class='hs-varid'>isReal</span> <span class='hs-varid'>v</span> <span class='hs-varid'>l</span> <span class='hs-varid'>r</span><span class='hs-layout'>}</span>
+<span class=hs-linenum> 54: </span>                      <span class='hs-layout'>}</span>                                  <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 55: </span><span class='hs-keyword'>data</span> <span class='hs-conid'>AVL</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>=</span>
+<span class=hs-linenum> 56: </span>    <span class='hs-conid'>Leaf</span>
+<span class=hs-linenum> 57: </span>  <span class='hs-keyglyph'>|</span> <span class='hs-conid'>Node</span> <span class='hs-layout'>{</span> <span class='hs-varid'>key</span> <span class='hs-keyglyph'>::</span> <span class='hs-varid'>a</span>      <span class='hs-comment'>-- value</span>
+<span class=hs-linenum> 58: </span>         <span class='hs-layout'>,</span> <span class='hs-varid'>l</span>   <span class='hs-keyglyph'>::</span> <span class='hs-conid'>AVL</span> <span class='hs-varid'>a</span>  <span class='hs-comment'>-- left subtree</span>
+<span class=hs-linenum> 59: </span>         <span class='hs-layout'>,</span> <span class='hs-varid'>r</span>   <span class='hs-keyglyph'>::</span> <span class='hs-conid'>AVL</span> <span class='hs-varid'>a</span>  <span class='hs-comment'>-- right subtree</span>
+<span class=hs-linenum> 60: </span>         <span class='hs-layout'>,</span> <span class='hs-varid'>ah</span>  <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Int</span>    <span class='hs-comment'>-- height</span>
+<span class=hs-linenum> 61: </span>         <span class='hs-layout'>}</span>
+<span class=hs-linenum> 62: </span>    <span class='hs-keyword'>deriving</span> <span class='hs-layout'>(</span><span class='hs-conid'>Show</span><span class='hs-layout'>)</span>
+<span class=hs-linenum> 63: </span>
+<span class=hs-linenum> 64: </span><span class='hs-comment'>-- | Trees of height N</span>
+<span class=hs-linenum> 65: </span><span class='hs-keyword'>{-@</span> <span class='hs-keyword'>type</span> <span class='hs-conid'>AVLN</span> <span class='hs-varid'>a</span> <span class='hs-conid'>N</span> <span class='hs-keyglyph'>=</span> <span class='hs-layout'>{</span><span class='hs-varid'>v</span><span class='hs-conop'>:</span> <span class='hs-conid'>AVL</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>|</span> <span class='hs-varid'>realHeight</span> <span class='hs-varid'>v</span> <span class='hs-keyglyph'>=</span> <span class='hs-conid'>N</span><span class='hs-layout'>}</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 66: </span>
+<span class=hs-linenum> 67: </span><span class='hs-comment'>-- | Trees of height equal to that of another T</span>
+<span class=hs-linenum> 68: </span><span class='hs-keyword'>{-@</span> <span class='hs-keyword'>type</span> <span class='hs-conid'>AVLT</span> <span class='hs-varid'>a</span> <span class='hs-conid'>T</span> <span class='hs-keyglyph'>=</span> <span class='hs-conid'>AVLN</span> <span class='hs-varid'>a</span> <span class='hs-layout'>{</span><span class='hs-varid'>realHeight</span> <span class='hs-conid'>T</span><span class='hs-layout'>}</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 69: </span>
+<span class=hs-linenum> 70: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>empty</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>AVLN</span> <span class='hs-varid'>a</span> <span class='hs-num'>0</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 71: </span><span class='hs-definition'>empty</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>AVL</span> <span class='hs-varid'>a</span>
+<span class=hs-linenum> 72: </span><a class=annot href="#"><span class=annottext>forall a . {VV##0 : (AVL2.AVL a) | AVL2.realHeight VV##0 == 0}</span><span class='hs-definition'>empty</span></a> <span class='hs-keyglyph'>=</span> <span class='hs-conid'>Leaf</span>
+<span class=hs-linenum> 73: </span>
+<span class=hs-linenum> 74: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>singleton</span> <span class='hs-keyglyph'>::</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>AVLN</span> <span class='hs-varid'>a</span> <span class='hs-num'>1</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 75: </span><span class='hs-definition'>singleton</span> <span class='hs-keyglyph'>::</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>AVL</span> <span class='hs-varid'>a</span>
+<span class=hs-linenum> 76: </span><a class=annot href="#"><span class=annottext>forall a .
+lq_tmp$x##1070:a -&gt; {VV##0 : (AVL2.AVL a) | AVL2.realHeight VV##0 == 1}</span><span class='hs-definition'>singleton</span></a> <a class=annot href="#"><span class=annottext>a</span><span class='hs-varid'>x</span></a> <span class='hs-keyglyph'>=</span> <span class='hs-conid'>Node</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1111 : a | lq_tmp$x##1111 == x##a18X}</span><span class='hs-varid'>x</span></a> <a class=annot href="#"><span class=annottext>{VV : forall a .
+      {lq_tmp$x##1073 : (AVL2.AVL a) | AVL2.realHeight lq_tmp$x##1073 == 0} | VV == AVL2.empty}</span><span class='hs-varid'>empty</span></a> <a class=annot href="#"><span class=annottext>{VV : forall a .
+      {lq_tmp$x##1079 : (AVL2.AVL a) | AVL2.realHeight lq_tmp$x##1079 == 0} | VV == AVL2.empty}</span><span class='hs-varid'>empty</span></a> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1087 : GHC.Internal.Types.Int | lq_tmp$x##1087 == (lq_anf$##7205759403792799427##d1vZ : int)}</span><span class='hs-num'>1</span></a>
+<span class=hs-linenum> 77: </span>
+<span class=hs-linenum> 78: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>node</span> <span class='hs-keyglyph'>::</span> <span class='hs-varid'>x</span><span class='hs-conop'>:</span><span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-varid'>l</span><span class='hs-conop'>:</span><span class='hs-conid'>AVLL</span> <span class='hs-varid'>a</span> <span class='hs-varid'>x</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-varid'>r</span><span class='hs-conop'>:</span><span class='hs-keyword'>{AVLR a x | isBal l r 1}</span>
+<span class=hs-linenum> 79: </span>           <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>AVLN</span> <span class='hs-varid'>a</span> <span class='hs-keyword'>{nodeHeight l r}</span>
+<span class=hs-linenum> 80: </span>  <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 81: </span><span class='hs-definition'>node</span> <span class='hs-keyglyph'>::</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>AVL</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>AVL</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>AVL</span> <span class='hs-varid'>a</span>
+<span class=hs-linenum> 82: </span><a class=annot href="#"><span class=annottext>forall a .
+lq_tmp$x##2136:a -&gt; lq_tmp$x##2137:(AVL2.AVL {v : a | v &lt; lq_tmp$x##2136}) -&gt; lq_tmp$x##2138:{VV##0 : (AVL2.AVL {v : a | v &gt; lq_tmp$x##2136}) | 0 - 1 &lt;= AVL2.realHeight lq_tmp$x##2137 - AVL2.realHeight VV##0
+                                                                                                                                                &amp;&amp; AVL2.realHeight lq_tmp$x##2137 - AVL2.realHeight VV##0 &lt;= 1} -&gt; {VV##0 : (AVL2.AVL a) | AVL2.realHeight VV##0 == 1 + (if AVL2.realHeight lq_tmp$x##2137 &gt; AVL2.realHeight lq_tmp$x##2138 then AVL2.realHeight lq_tmp$x##2137 else AVL2.realHeight lq_tmp$x##2138)}</span><span class='hs-definition'>node</span></a> <a class=annot href="#"><span class=annottext>a</span><span class='hs-varid'>v</span></a> <a class=annot href="#"><span class=annottext>(AVL2.AVL {v : a | v &lt; v##a18Y})</span><span class='hs-varid'>l</span></a> <a class=annot href="#"><span class=annottext>{VV##1 : (AVL2.AVL {v : a | v &gt; v##a18Y}) | 0 - 1 &lt;= AVL2.realHeight l##a18Z - AVL2.realHeight VV##1
+                                            &amp;&amp; AVL2.realHeight l##a18Z - AVL2.realHeight VV##1 &lt;= 1}</span><span class='hs-varid'>r</span></a> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{VV : forall a .
+      lq_tmp$x##2211:a -&gt; lq_tmp$x##2212:(AVL2.AVL {lq_tmp$x##2200 : a | lq_tmp$x##2200 &lt; lq_tmp$x##2211}) -&gt; lq_tmp$x##2213:{lq_tmp$x##2203 : (AVL2.AVL {lq_tmp$x##2202 : a | lq_tmp$x##2202 &gt; lq_tmp$x##2211}) | 0 - 1 &lt;= AVL2.realHeight lq_tmp$x##2212 - AVL2.realHeight lq_tmp$x##2203
+                                                                                                                                                                                                                   &amp;&amp; AVL2.realHeight lq_tmp$x##2212 - AVL2.realHeight lq_tmp$x##2203 &lt;= 1} -&gt; lq_tmp$x##2214:{lq_tmp$x##2204 : GHC.Internal.Types.Int | lq_tmp$x##2204 == 1 + (if AVL2.realHeight lq_tmp$x##2212 &gt; AVL2.realHeight lq_tmp$x##2213 then AVL2.realHeight lq_tmp$x##2212 else AVL2.realHeight lq_tmp$x##2213)
+                                                                                                                                                                                                                                                                                                                                                         &amp;&amp; lq_tmp$x##2204 &gt;= 0} -&gt; {lq_tmp$x##2206 : (AVL2.AVL a) | is$AVL2.Node lq_tmp$x##2206
+                                                                                                                                                                                                                                                                                                                                                                                                                     &amp;&amp; not (is$AVL2.Leaf lq_tmp$x##2206)
+                                                                                                                                                                                                                                                                                                                                                                                                                     &amp;&amp; lq_tmp$x##2206 == AVL2.Node lq_tmp$x##2211 lq_tmp$x##2212 lq_tmp$x##2213 lq_tmp$x##2214
+                                                                                                                                                                                                                                                                                                                                                                                                                     &amp;&amp; AVL2.ah lq_tmp$x##2206 == lq_tmp$x##2214
+                                                                                                                                                                                                                                                                                                                                                                                                                     &amp;&amp; AVL2.balFac lq_tmp$x##2206 == AVL2.getHeight lq_tmp$x##2212 - AVL2.getHeight lq_tmp$x##2213
+                                                                                                                                                                                                                                                                                                                                                                                                                     &amp;&amp; AVL2.elems lq_tmp$x##2206 == Set_cup (Set_cup (Set_sng lq_tmp$x##2211) (AVL2.elems lq_tmp$x##2212)) (AVL2.elems lq_tmp$x##2213)
+                                                                                                                                                                                                                                                                                                                                                                                                                     &amp;&amp; AVL2.getHeight lq_tmp$x##2206 == lq_tmp$x##2214
+                                                                                                                                                                                                                                                                                                                                                                                                                     &amp;&amp; AVL2.key lq_tmp$x##2206 == lq_tmp$x##2211
+                                                                                                                                                                                                                                                                                                                                                                                                                     &amp;&amp; AVL2.l lq_tmp$x##2206 == lq_tmp$x##2212
+                                                                                                                                                                                                                                                                                                                                                                                                                     &amp;&amp; AVL2.r lq_tmp$x##2206 == lq_tmp$x##2213
+                                                                                                                                                                                                                                                                                                                                                                                                                     &amp;&amp; AVL2.realHeight lq_tmp$x##2206 == 1 + (if AVL2.realHeight lq_tmp$x##2212 &gt; AVL2.realHeight lq_tmp$x##2213 then AVL2.realHeight lq_tmp$x##2212 else AVL2.realHeight lq_tmp$x##2213)} | VV == AVL2.Node}</span><span class='hs-conid'>Node</span></a> <a class=annot href="#"><span class=annottext>{lq_tmp$x##2218 : a | lq_tmp$x##2218 == v##a18Y}</span><span class='hs-varid'>v</span></a> <a class=annot href="#"><span class=annottext>{lq_tmp$x##2220 : (AVL2.AVL {lq_tmp$x##2219 : a | lq_tmp$x##2219 &lt; v##a18Y}) | lq_tmp$x##2220 == l##a18Z
+                                                                               &amp;&amp; AVL2.getHeight lq_tmp$x##2220 &gt;= 0
+                                                                               &amp;&amp; AVL2.realHeight lq_tmp$x##2220 &gt;= 0}</span><span class='hs-varid'>l</span></a> <a class=annot href="#"><span class=annottext>{lq_tmp$x##2222 : (AVL2.AVL {lq_tmp$x##2221 : a | lq_tmp$x##2221 &gt; v##a18Y}) | lq_tmp$x##2222 == r##a190
+                                                                               &amp;&amp; AVL2.getHeight lq_tmp$x##2222 &gt;= 0
+                                                                               &amp;&amp; AVL2.realHeight lq_tmp$x##2222 &gt;= 0
+                                                                               &amp;&amp; 0 - 1 &lt;= AVL2.realHeight l##a18Z - AVL2.realHeight lq_tmp$x##2222
+                                                                               &amp;&amp; AVL2.realHeight l##a18Z - AVL2.realHeight lq_tmp$x##2222 &lt;= 1}</span><span class='hs-varid'>r</span></a> <span class=hs-error><a class=annot href="#"><span class=annottext>{lq_tmp$x##2223 : GHC.Internal.Types.Int | lq_tmp$x##2223 == h##a191
+                                           &amp;&amp; lq_tmp$x##2223 == lq_anf$##7205759403792799499##d1x9 + lq_anf$##7205759403792799500##d1xa}</span><span class='hs-varid'>h</span></a></span>
+<span class=hs-linenum> 83: </span> <span class='hs-keyword'>where</span>
+<span class=hs-linenum> 84: </span>   <a class=annot href="#"><span class=annottext>{lq_tmp$x##2193 : GHC.Internal.Types.Int | lq_tmp$x##2193 == lq_anf$##7205759403792799499##d1x9 + lq_anf$##7205759403792799500##d1xa}</span><span class='hs-varid'>h</span></a>       <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##2167 : GHC.Internal.Types.Int | lq_tmp$x##2167 == (lq_anf$##7205759403792799498##d1x8 : int)}</span><span class='hs-num'>1</span></a> <span class='hs-varop'>+</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##2174 : GHC.Internal.Types.Int | lq_tmp$x##2174 == (if hl##a192 &gt; hr##a193 then hl##a192 else hr##a193)
+                                           &amp;&amp; lq_tmp$x##2174 &gt;= 0
+                                           &amp;&amp; lq_tmp$x##2174 &gt;= hl##a192
+                                           &amp;&amp; lq_tmp$x##2174 &gt;= hr##a193}</span><span class='hs-varid'>max</span></a> <a class=annot href="#"><span class=annottext>{lq_tmp$x##2179 : GHC.Internal.Types.Int | lq_tmp$x##2179 == hl##a192
+                                           &amp;&amp; lq_tmp$x##2179 == AVL2.getHeight l##a18Z
+                                           &amp;&amp; lq_tmp$x##2179 &gt;= 0}</span><span class='hs-varid'>hl</span></a> <a class=annot href="#"><span class=annottext>{lq_tmp$x##2180 : GHC.Internal.Types.Int | lq_tmp$x##2180 == hr##a193
+                                           &amp;&amp; lq_tmp$x##2180 == AVL2.getHeight r##a190
+                                           &amp;&amp; lq_tmp$x##2180 &gt;= 0}</span><span class='hs-varid'>hr</span></a>
+<span class=hs-linenum> 85: </span>   <a class=annot href="#"><span class=annottext>{lq_tmp$x##2155 : GHC.Internal.Types.Int | lq_tmp$x##2155 == AVL2.getHeight l##a18Z
+                                           &amp;&amp; lq_tmp$x##2155 &gt;= 0}</span><span class='hs-varid'>hl</span></a>      <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##2155 : GHC.Internal.Types.Int | lq_tmp$x##2155 == AVL2.getHeight l##a18Z
+                                           &amp;&amp; lq_tmp$x##2155 &gt;= 0}</span><span class='hs-varid'>getHeight</span></a> <a class=annot href="#"><span class=annottext>{lq_tmp$x##2162 : (AVL2.AVL {lq_tmp$x##2161 : a | lq_tmp$x##2161 &lt; v##a18Y}) | lq_tmp$x##2162 == l##a18Z
+                                                                               &amp;&amp; AVL2.getHeight lq_tmp$x##2162 &gt;= 0
+                                                                               &amp;&amp; AVL2.realHeight lq_tmp$x##2162 &gt;= 0}</span><span class='hs-varid'>l</span></a>
+<span class=hs-linenum> 86: </span>   <a class=annot href="#"><span class=annottext>{lq_tmp$x##2144 : GHC.Internal.Types.Int | lq_tmp$x##2144 == AVL2.getHeight r##a190
+                                           &amp;&amp; lq_tmp$x##2144 &gt;= 0}</span><span class='hs-varid'>hr</span></a>      <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##2144 : GHC.Internal.Types.Int | lq_tmp$x##2144 == AVL2.getHeight r##a190
+                                           &amp;&amp; lq_tmp$x##2144 &gt;= 0}</span><span class='hs-varid'>getHeight</span></a> <a class=annot href="#"><span class=annottext>{lq_tmp$x##2151 : (AVL2.AVL {lq_tmp$x##2150 : a | lq_tmp$x##2150 &gt; v##a18Y}) | lq_tmp$x##2151 == r##a190
+                                                                               &amp;&amp; AVL2.getHeight lq_tmp$x##2151 &gt;= 0
+                                                                               &amp;&amp; AVL2.realHeight lq_tmp$x##2151 &gt;= 0
+                                                                               &amp;&amp; 0 - 1 &lt;= AVL2.realHeight l##a18Z - AVL2.realHeight lq_tmp$x##2151
+                                                                               &amp;&amp; AVL2.realHeight l##a18Z - AVL2.realHeight lq_tmp$x##2151 &lt;= 1}</span><span class='hs-varid'>r</span></a>
+<span class=hs-linenum> 87: </span>
+<span class=hs-linenum> 88: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>inline</span> <span class='hs-varid'>leftBig</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 89: </span><span class='hs-comment'>--{-@ leftBig :: l:AVL a -&gt; r:AVL a -&gt; Bool @-}</span>
+<span class=hs-linenum> 90: </span><span class='hs-definition'>leftBig</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>AVL</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>AVL</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Bool</span>
+<span class=hs-linenum> 91: </span><a class=annot href="#"><span class=annottext>forall a .
+lq_tmp$x##1490:(AVL2.AVL a) -&gt; lq_tmp$x##1491:(AVL2.AVL a) -&gt; {VV : GHC.Internal.Types.Bool | VV &lt;=&gt; AVL2.getHeight lq_tmp$x##1490 - AVL2.getHeight lq_tmp$x##1491 == 2}</span><span class='hs-definition'>leftBig</span></a> <a class=annot href="#"><span class=annottext>(AVL2.AVL a)</span><span class='hs-varid'>l</span></a> <a class=annot href="#"><span class=annottext>(AVL2.AVL a)</span><span class='hs-varid'>r</span></a> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1498 : GHC.Internal.Types.Int | lq_tmp$x##1498 == AVL2.getHeight l##a194 - AVL2.getHeight r##a195}</span><span class='hs-varid'>diff</span></a> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1507 : (AVL2.AVL a) | lq_tmp$x##1507 == l##a194
+                                 &amp;&amp; AVL2.getHeight lq_tmp$x##1507 &gt;= 0
+                                 &amp;&amp; AVL2.realHeight lq_tmp$x##1507 &gt;= 0}</span><span class='hs-varid'>l</span></a> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1509 : (AVL2.AVL a) | lq_tmp$x##1509 == r##a195
+                                 &amp;&amp; AVL2.getHeight lq_tmp$x##1509 &gt;= 0
+                                 &amp;&amp; AVL2.realHeight lq_tmp$x##1509 &gt;= 0}</span><span class='hs-varid'>r</span></a> <span class='hs-varop'>==</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1514 : GHC.Internal.Types.Int | lq_tmp$x##1514 == (lq_anf$##7205759403792799450##d1wm : int)}</span><span class='hs-num'>2</span></a>
+<span class=hs-linenum> 92: </span>
+<span class=hs-linenum> 93: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>inline</span> <span class='hs-varid'>rightBig</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 94: </span><span class='hs-comment'>--{-@ rightBig :: l:AVL a -&gt; r:AVL a -&gt; Bool @-}</span>
+<span class=hs-linenum> 95: </span><span class='hs-definition'>rightBig</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>AVL</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>AVL</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Bool</span>
+<span class=hs-linenum> 96: </span><a class=annot href="#"><span class=annottext>forall a .
+lq_tmp$x##1441:(AVL2.AVL a) -&gt; lq_tmp$x##1442:(AVL2.AVL a) -&gt; {VV : GHC.Internal.Types.Bool | VV &lt;=&gt; AVL2.getHeight lq_tmp$x##1442 - AVL2.getHeight lq_tmp$x##1441 == 2}</span><span class='hs-definition'>rightBig</span></a> <a class=annot href="#"><span class=annottext>(AVL2.AVL a)</span><span class='hs-varid'>l</span></a> <a class=annot href="#"><span class=annottext>(AVL2.AVL a)</span><span class='hs-varid'>r</span></a> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1449 : GHC.Internal.Types.Int | lq_tmp$x##1449 == AVL2.getHeight r##a197 - AVL2.getHeight l##a196}</span><span class='hs-varid'>diff</span></a> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1458 : (AVL2.AVL a) | lq_tmp$x##1458 == r##a197
+                                 &amp;&amp; AVL2.getHeight lq_tmp$x##1458 &gt;= 0
+                                 &amp;&amp; AVL2.realHeight lq_tmp$x##1458 &gt;= 0}</span><span class='hs-varid'>r</span></a> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1460 : (AVL2.AVL a) | lq_tmp$x##1460 == l##a196
+                                 &amp;&amp; AVL2.getHeight lq_tmp$x##1460 &gt;= 0
+                                 &amp;&amp; AVL2.realHeight lq_tmp$x##1460 &gt;= 0}</span><span class='hs-varid'>l</span></a> <span class='hs-varop'>==</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1465 : GHC.Internal.Types.Int | lq_tmp$x##1465 == (lq_anf$##7205759403792799447##d1wj : int)}</span><span class='hs-num'>2</span></a>
+<span class=hs-linenum> 97: </span>
+<span class=hs-linenum> 98: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>inline</span> <span class='hs-varid'>diff</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 99: </span><span class='hs-comment'>--{-@ diff :: s:AVL a -&gt; t:AVL a -&gt; Int @-}</span>
+<span class=hs-linenum>100: </span><span class='hs-definition'>diff</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>AVL</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>AVL</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span>
+<span class=hs-linenum>101: </span><a class=annot href="#"><span class=annottext>forall a .
+lq_tmp$x##1311:(AVL2.AVL a) -&gt; lq_tmp$x##1312:(AVL2.AVL a) -&gt; {VV : GHC.Internal.Types.Int | VV == AVL2.getHeight lq_tmp$x##1311 - AVL2.getHeight lq_tmp$x##1312}</span><span class='hs-definition'>diff</span></a> <a class=annot href="#"><span class=annottext>(AVL2.AVL a)</span><span class='hs-varid'>s</span></a> <a class=annot href="#"><span class=annottext>(AVL2.AVL a)</span><span class='hs-varid'>t</span></a> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1317 : GHC.Internal.Types.Int | lq_tmp$x##1317 == AVL2.getHeight s##a198
+                                           &amp;&amp; lq_tmp$x##1317 &gt;= 0}</span><span class='hs-varid'>getHeight</span></a> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1324 : (AVL2.AVL a) | lq_tmp$x##1324 == s##a198
+                                 &amp;&amp; AVL2.getHeight lq_tmp$x##1324 &gt;= 0
+                                 &amp;&amp; AVL2.realHeight lq_tmp$x##1324 &gt;= 0}</span><span class='hs-varid'>s</span></a> <span class='hs-comment'>-</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1328 : GHC.Internal.Types.Int | lq_tmp$x##1328 == AVL2.getHeight t##a199
+                                           &amp;&amp; lq_tmp$x##1328 &gt;= 0}</span><span class='hs-varid'>getHeight</span></a> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1335 : (AVL2.AVL a) | lq_tmp$x##1335 == t##a199
+                                 &amp;&amp; AVL2.getHeight lq_tmp$x##1335 &gt;= 0
+                                 &amp;&amp; AVL2.realHeight lq_tmp$x##1335 &gt;= 0}</span><span class='hs-varid'>t</span></a>
+<span class=hs-linenum>102: </span>
+<span class=hs-linenum>103: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>measure</span> <span class='hs-varid'>getHeight</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum>104: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>getHeight</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>AVL</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Nat</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum>105: </span><span class='hs-definition'>getHeight</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>AVL</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span>
+<span class=hs-linenum>106: </span><a class=annot href="#"><span class=annottext>forall a .
+lq_tmp$x##1118:(AVL2.AVL a) -&gt; {VV##0 : GHC.Internal.Types.Int | VV##0 == AVL2.getHeight lq_tmp$x##1118
+                                                                 &amp;&amp; VV##0 &gt;= 0}</span><span class='hs-definition'>getHeight</span></a> <span class='hs-conid'>Leaf</span>           <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1131 : GHC.Internal.Prim.Int# | lq_tmp$x##1131 == 0}</span><span class='hs-num'>0</span></a>
+<span class=hs-linenum>107: </span><span class='hs-definition'>getHeight</span> <span class='hs-layout'>(</span><span class='hs-conid'>Node</span> <span class='hs-keyword'>_</span> <span class='hs-keyword'>_</span> <span class='hs-keyword'>_</span> <span class='hs-varid'>n</span><span class='hs-layout'>)</span> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1174 : GHC.Internal.Types.Int | lq_tmp$x##1174 == n##a19a
+                                           &amp;&amp; lq_tmp$x##1174 == 1 + (if AVL2.realHeight ds_d1sG &gt; AVL2.realHeight ds_d1sH then AVL2.realHeight ds_d1sG else AVL2.realHeight ds_d1sH)
+                                           &amp;&amp; lq_tmp$x##1174 &gt;= 0}</span><span class='hs-varid'>n</span></a>
+<span class=hs-linenum>108: </span>
+<span class=hs-linenum>109: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>measure</span> <span class='hs-varid'>balFac</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum>110: </span><span class='hs-definition'>balFac</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>AVL</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span>
+<span class=hs-linenum>111: </span><a class=annot href="#"><span class=annottext>forall a .
+lq_tmp$x##1176:(AVL2.AVL a) -&gt; {VV : GHC.Internal.Types.Int | VV == AVL2.balFac lq_tmp$x##1176}</span><span class='hs-definition'>balFac</span></a> <span class='hs-conid'>Leaf</span>           <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1189 : GHC.Internal.Prim.Int# | lq_tmp$x##1189 == 0}</span><span class='hs-num'>0</span></a>
+<span class=hs-linenum>112: </span><span class='hs-definition'>balFac</span> <span class='hs-layout'>(</span><span class='hs-conid'>Node</span> <span class='hs-keyword'>_</span> <span class='hs-varid'>l</span> <span class='hs-varid'>r</span> <span class='hs-keyword'>_</span><span class='hs-layout'>)</span> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1234 : GHC.Internal.Types.Int | lq_tmp$x##1234 == AVL2.getHeight l##a19b
+                                           &amp;&amp; lq_tmp$x##1234 &gt;= 0}</span><span class='hs-varid'>getHeight</span></a> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1241 : (AVL2.AVL {lq_tmp$x##1240 : a | lq_tmp$x##1240 &lt; ds_d1sJ}) | lq_tmp$x##1241 == l##a19b
+                                                                               &amp;&amp; AVL2.getHeight lq_tmp$x##1241 &gt;= 0
+                                                                               &amp;&amp; AVL2.realHeight lq_tmp$x##1241 &gt;= 0}</span><span class='hs-varid'>l</span></a> <span class='hs-comment'>-</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1245 : GHC.Internal.Types.Int | lq_tmp$x##1245 == AVL2.getHeight r##a19c
+                                           &amp;&amp; lq_tmp$x##1245 &gt;= 0}</span><span class='hs-varid'>getHeight</span></a> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1252 : (AVL2.AVL {lq_tmp$x##1251 : a | lq_tmp$x##1251 &gt; ds_d1sJ}) | lq_tmp$x##1252 == r##a19c
+                                                                               &amp;&amp; AVL2.getHeight lq_tmp$x##1252 &gt;= 0
+                                                                               &amp;&amp; AVL2.realHeight lq_tmp$x##1252 &gt;= 0
+                                                                               &amp;&amp; 0 - 1 &lt;= AVL2.realHeight l##a19b - AVL2.realHeight lq_tmp$x##1252
+                                                                               &amp;&amp; AVL2.realHeight l##a19b - AVL2.realHeight lq_tmp$x##1252 &lt;= 1}</span><span class='hs-varid'>r</span></a>
+<span class=hs-linenum>113: </span><span class='hs-comment'>--balFac (Node _ l r _) = diff l r</span>
+<span class=hs-linenum>114: </span><span class='hs-comment'>--balFac (Node _ l r _) = realHeight l - realHeight r</span>
+<span class=hs-linenum>115: </span>
+<span class=hs-linenum>116: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>inline</span> <span class='hs-varid'>leftHeavy</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum>117: </span><span class='hs-comment'>--{-@ leftHeavy :: t:AVL a -&gt; Bool @-}</span>
+<span class=hs-linenum>118: </span><span class='hs-definition'>leftHeavy</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>AVL</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Bool</span> 
+<span class=hs-linenum>119: </span><a class=annot href="#"><span class=annottext>forall a .
+lq_tmp$x##2017:(AVL2.AVL a) -&gt; {VV : GHC.Internal.Types.Bool | VV &lt;=&gt; AVL2.balFac lq_tmp$x##2017 &gt; 0}</span><span class='hs-definition'>leftHeavy</span></a>  <a class=annot href="#"><span class=annottext>(AVL2.AVL a)</span><span class='hs-varid'>t</span></a> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##2021 : GHC.Internal.Types.Int | lq_tmp$x##2021 == AVL2.balFac t##a19d}</span><span class='hs-varid'>balFac</span></a> <a class=annot href="#"><span class=annottext>{lq_tmp$x##2028 : (AVL2.AVL a) | lq_tmp$x##2028 == t##a19d
+                                 &amp;&amp; AVL2.getHeight lq_tmp$x##2028 &gt;= 0
+                                 &amp;&amp; AVL2.realHeight lq_tmp$x##2028 &gt;= 0}</span><span class='hs-varid'>t</span></a> <span class='hs-varop'>&gt;</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##2033 : GHC.Internal.Types.Int | lq_tmp$x##2033 == (lq_anf$##7205759403792799491##d1x1 : int)}</span><span class='hs-num'>0</span></a>
+<span class=hs-linenum>120: </span>
+<span class=hs-linenum>121: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>inline</span> <span class='hs-varid'>rightHeavy</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum>122: </span><span class='hs-comment'>--{-@ rightHeavy :: t:AVL a -&gt; Bool @-}</span>
+<span class=hs-linenum>123: </span><span class='hs-definition'>rightHeavy</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>AVL</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Bool</span> 
+<span class=hs-linenum>124: </span><a class=annot href="#"><span class=annottext>forall a .
+lq_tmp$x##2057:(AVL2.AVL a) -&gt; {VV : GHC.Internal.Types.Bool | VV &lt;=&gt; AVL2.balFac lq_tmp$x##2057 &lt; 0}</span><span class='hs-definition'>rightHeavy</span></a> <a class=annot href="#"><span class=annottext>(AVL2.AVL a)</span><span class='hs-varid'>t</span></a> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##2061 : GHC.Internal.Types.Int | lq_tmp$x##2061 == AVL2.balFac t##a19e}</span><span class='hs-varid'>balFac</span></a> <a class=annot href="#"><span class=annottext>{lq_tmp$x##2068 : (AVL2.AVL a) | lq_tmp$x##2068 == t##a19e
+                                 &amp;&amp; AVL2.getHeight lq_tmp$x##2068 &gt;= 0
+                                 &amp;&amp; AVL2.realHeight lq_tmp$x##2068 &gt;= 0}</span><span class='hs-varid'>t</span></a> <span class='hs-varop'>&lt;</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##2073 : GHC.Internal.Types.Int | lq_tmp$x##2073 == (lq_anf$##7205759403792799494##d1x4 : int)}</span><span class='hs-num'>0</span></a>
+<span class=hs-linenum>125: </span>
+<span class=hs-linenum>126: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>inline</span> <span class='hs-varid'>noHeavy</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum>127: </span><span class='hs-comment'>--{-@ noHeavy :: t:AVL a -&gt; Bool @-}</span>
+<span class=hs-linenum>128: </span><span class='hs-definition'>noHeavy</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>AVL</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Bool</span>
+<span class=hs-linenum>129: </span><a class=annot href="#"><span class=annottext>forall a .
+lq_tmp$x##1271:(AVL2.AVL a) -&gt; {VV : GHC.Internal.Types.Bool | VV &lt;=&gt; AVL2.balFac lq_tmp$x##1271 == 0}</span><span class='hs-definition'>noHeavy</span></a> <a class=annot href="#"><span class=annottext>(AVL2.AVL a)</span><span class='hs-varid'>t</span></a> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1275 : GHC.Internal.Types.Int | lq_tmp$x##1275 == AVL2.balFac t##a19f}</span><span class='hs-varid'>balFac</span></a> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1282 : (AVL2.AVL a) | lq_tmp$x##1282 == t##a19f
+                                 &amp;&amp; AVL2.getHeight lq_tmp$x##1282 &gt;= 0
+                                 &amp;&amp; AVL2.realHeight lq_tmp$x##1282 &gt;= 0}</span><span class='hs-varid'>t</span></a> <span class='hs-varop'>==</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1287 : GHC.Internal.Types.Int | lq_tmp$x##1287 == (lq_anf$##7205759403792799436##d1w8 : int)}</span><span class='hs-num'>0</span></a>
+<span class=hs-linenum>130: </span>
+<span class=hs-linenum>131: </span><span class='hs-comment'>{-
+{-@ balL0 :: x:a
+          -&gt; l:{AVLL a x | noHeavy l &amp;&amp; not (isLeaf l)} 
+          -&gt; r:{AVLR a x | leftBig l r}
+          -&gt; AVLN a {1 + realHeight l}
+  @-}
+balL0 :: a -&gt; AVL a -&gt; AVL a -&gt; AVL a
+balL0 v (Node lv ll lr _) r = node lv ll (node v lr r)
+-}</span>
+<span class=hs-linenum>140: </span><span class='hs-comment'>{-
+{-@ balLL :: x:a
+          -&gt; l:{AVLL a x | leftHeavy l}
+          -&gt; r:{AVLR a x | leftBig l r}
+          -&gt; AVLT a l
+  @-}
+balLL v (Node lv ll lr _) r = node lv ll (node v lr r)
+
+{-@ balLR :: x:a
+          -&gt; l:{AVLL a x | rightHeavy l}
+          -&gt; r:{AVLR a x | leftBig l r}
+          -&gt; AVLT a l
+  @-}
+balLR v (Node lv ll (Node lrv lrl lrr _) _) r
+  = node lrv (node lv ll lrl) (node v lrr r)
+-}</span>
+<span class=hs-linenum>156: </span><span class='hs-comment'>{-
+{-@ balR0 :: x:a
+          -&gt; l: AVLL a x
+          -&gt; r: {AVLR a x | rightBig l r &amp;&amp; noHeavy r}
+          -&gt; AVLN a {realHeight r + 1}
+  @-}
+balR0 v (Node rv rl rr _) r = node rv (node v rl r) rr
+
+{-@ balRR :: x:a
+          -&gt; l: AVLL a x
+          -&gt; r:{AVLR a x | rightBig l r &amp;&amp; rightHeavy r}
+          -&gt; AVLT a r
+  @-}
+balRR v l (Node rv rl rr _) = node rv (node v l rl) rr
+{-@ balRL :: x:a
+          -&gt; l: AVLL a x
+          -&gt; r:{AVLR a x | rightBig l r &amp;&amp; leftHeavy r}
+          -&gt; AVLT a r
+  @-}
+balRL v l (Node rv rl rr _) = node rv (node v l rl) rr
+-}</span>
+<span class=hs-linenum>177: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>inline</span> <span class='hs-varid'>eqOrUp</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum>178: </span><a class=annot href="#"><span class=annottext>forall a .
+lq_tmp$x##1355:(AVL2.AVL a) -&gt; lq_tmp$x##1356:(AVL2.AVL a) -&gt; {VV : GHC.Internal.Types.Bool | VV &lt;=&gt; AVL2.getHeight lq_tmp$x##1356 - AVL2.getHeight lq_tmp$x##1355 == 0
+                                                                                                     || AVL2.getHeight lq_tmp$x##1356 - AVL2.getHeight lq_tmp$x##1355 == 1}</span><span class='hs-definition'>eqOrUp</span></a> <a class=annot href="#"><span class=annottext>(AVL2.AVL a)</span><span class='hs-varid'>s</span></a> <a class=annot href="#"><span class=annottext>(AVL2.AVL a)</span><span class='hs-varid'>t</span></a> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1400 : GHC.Internal.Types.Int | lq_tmp$x##1400 == d##a19i
+                                           &amp;&amp; lq_tmp$x##1400 == AVL2.getHeight t##a19h - AVL2.getHeight s##a19g}</span><span class='hs-varid'>d</span></a> <span class='hs-varop'>==</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1379 : GHC.Internal.Types.Int | lq_tmp$x##1379 == (lq_anf$##7205759403792799440##d1wc : int)}</span><span class='hs-num'>0</span></a> <span class='hs-varop'>||</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1427 : GHC.Internal.Types.Int | lq_tmp$x##1427 == d##a19i
+                                           &amp;&amp; lq_tmp$x##1427 == AVL2.getHeight t##a19h - AVL2.getHeight s##a19g}</span><span class='hs-varid'>d</span></a> <span class='hs-varop'>==</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1406 : GHC.Internal.Types.Int | lq_tmp$x##1406 == (lq_anf$##7205759403792799443##d1wf : int)}</span><span class='hs-num'>1</span></a>
+<span class=hs-linenum>179: </span>  <span class='hs-keyword'>where</span>
+<span class=hs-linenum>180: </span>    <a class=annot href="#"><span class=annottext>{lq_tmp$x##1363 : GHC.Internal.Types.Int | lq_tmp$x##1363 == AVL2.getHeight t##a19h - AVL2.getHeight s##a19g}</span><span class='hs-varid'>d</span></a>      <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1363 : GHC.Internal.Types.Int | lq_tmp$x##1363 == AVL2.getHeight t##a19h - AVL2.getHeight s##a19g}</span><span class='hs-varid'>diff</span></a> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1372 : (AVL2.AVL a) | lq_tmp$x##1372 == t##a19h
+                                 &amp;&amp; AVL2.getHeight lq_tmp$x##1372 &gt;= 0
+                                 &amp;&amp; AVL2.realHeight lq_tmp$x##1372 &gt;= 0}</span><span class='hs-varid'>t</span></a> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1374 : (AVL2.AVL a) | lq_tmp$x##1374 == s##a19g
+                                 &amp;&amp; AVL2.getHeight lq_tmp$x##1374 &gt;= 0
+                                 &amp;&amp; AVL2.realHeight lq_tmp$x##1374 &gt;= 0}</span><span class='hs-varid'>s</span></a>
+<span class=hs-linenum>181: </span>
+<span class=hs-linenum>182: </span><span class='hs-comment'>{-
+{-@ insL :: x:a
+         -&gt; t:{AVL a | x &lt; key t &amp;&amp; 0 &lt; realHeight t}
+         -&gt; {v: AVL a | eqOrUp t v}
+  @-}
+insL a (Node v l r _)
+  | isLeftBig &amp;&amp; leftHeavy l'  = balLL v l' r
+  | isLeftBig &amp;&amp; rightHeavy l' = balLR v l' r
+  | isLeftBig                  = balL0 v l' r
+  | otherwise                  = node  v l' r
+  where
+    isLeftBig                  = leftBig l' r
+    l'                         = insert a l
+
+{-@ insR :: x:a
+         -&gt; t:{AVL a  | key t &lt; x &amp;&amp; 0 &lt; realHeight t }
+         -&gt; {v: AVL a | eqOrUp t v}
+  @-}
+insR = undefined
+
+{-@ bal :: x:a
+        -&gt; l:AVLL a x
+        -&gt; r:{AVLR a x | isBal l r 2}
+        -&gt; {t:AVL a | reBal l r t}
+  @-}
+bal v l r
+  | isLeftBig  &amp;&amp; leftHeavy l  = balLL v l r
+  | isLeftBig  &amp;&amp; rightHeavy l = balLR v l r
+  | isLeftBig                  = balL0 v l r
+  | isRightBig &amp;&amp; leftHeavy r  = balRL v l r
+  | isRightBig &amp;&amp; rightHeavy r = balRR v l r
+  | isRightBig                 = balR0 v l r
+  | otherwise                  = node  v l r
+  where
+    isLeftBig                  = leftBig l r
+    isRightBig                 = rightBig l r
+
+{-@ inline reBal @-}
+reBal l r t = bigHt l r t &amp;&amp; balHt l r t
+
+{-@ inline balHt @-}
+balHt l r t = not (isBal l r 1) || isReal (realHeight t) l r
+
+{-@ inline bigHt @-}
+bigHt l r t = lBig &amp;&amp; rBig
+  where
+    lBig    = not (hl &gt;= hr) || (eqOrUp l t)
+    rBig    = (hl &gt;= hr)     || (eqOrUp r t)
+    hl      = realHeight l
+    hr      = realHeight r
+
+{-@ insert' :: a -&gt; s:AVL a -&gt; {t: AVL a | eqOrUp s t} @-}
+insert' a t@(Node v l r n)
+  | a &lt; v      = bal v (insert' a l) r
+  | a &gt; v      = bal v l (insert' a r)
+  | otherwise  = t
+insert' a Leaf = singleton a
+
+{-@ delete    :: a -&gt; s:AVL a -&gt; {t:AVL a | eqOrDn s t} @-}
+delete y (Node x l r _)
+  | y &lt; x     = bal x (delete y l) r
+  | x &lt; y     = bal x l (delete y r)
+  | otherwise = merge x l r
+delete _ Leaf = Leaf
+
+{-@ inline eqOrDn @-}
+eqOrDn s t = eqOrUp t s
+
+{-@ merge :: x:a -&gt; l:AVLL a x -&gt; r:{AVLR a x | isBal l r 1}
+          -&gt; {t:AVL a | bigHt l r t}
+  @-}
+merge _ Leaf r = r
+merge _ l Leaf = l
+merge x l r    = bal y l r'
+  where
+   (y, r')     = getMin r
+
+getMin (Node x Leaf r _) = (x, r)
+getMin (Node x l r _)    = (x', bal x l' r)
+  where
+    (x', l')             = getMin l
+-}</span>
+<span class=hs-linenum>264: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>measure</span> <span class='hs-varid'>elems</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum>265: </span><span class='hs-definition'>elems</span>                <span class='hs-keyglyph'>::</span> <span class='hs-layout'>(</span><span class='hs-conid'>Ord</span> <span class='hs-varid'>a</span><span class='hs-layout'>)</span> <span class='hs-keyglyph'>=&gt;</span> <span class='hs-conid'>AVL</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>S.Set</span> <span class='hs-varid'>a</span>
+<span class=hs-linenum>266: </span><a class=annot href="#"><span class=annottext>forall a .
+(GHC.Internal.Classes.Ord&lt;[]&gt; a) =&gt;
+lq_tmp$x##1540:(AVL2.AVL a) -&gt; {VV : (Data.Set.Internal.Set a) | VV == AVL2.elems lq_tmp$x##1540}</span><span class='hs-definition'>elems</span></a> <span class='hs-layout'>(</span><span class='hs-conid'>Node</span> <span class='hs-varid'>x</span> <span class='hs-varid'>l</span> <span class='hs-varid'>r</span> <span class='hs-keyword'>_</span><span class='hs-layout'>)</span> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1598 : (Data.Set.Internal.Set {lq_tmp$x##1603 : a | $k_##1602[@a##xo:=a##a1iQ][VV##1601:=lq_tmp$x##1603][lq_tmp$x##1600:=x##a19j]}) | lq_tmp$x##1598 == Set_sng x##a19j}</span><span class='hs-layout'>(</span></a><span class='hs-conid'>S.singleton</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1604 : a | lq_tmp$x##1604 == x##a19j}</span><span class='hs-varid'>x</span></a><span class='hs-layout'>)</span> <span class='hs-varop'>`S.union`</span>
+<span class=hs-linenum>267: </span>                       <a class=annot href="#"><span class=annottext>{lq_tmp$x##1611 : (Data.Set.Internal.Set {lq_tmp$x##1618 : a | $k_##1617[@a##a1iQ:=a##a1iQ][VV##1616:=lq_tmp$x##1618][lq_tmp$x##1614:=fix$36$$36$dOrd_a1iR][lq_tmp$x##1615:=l##a19k]}) | lq_tmp$x##1611 == AVL2.elems l##a19k}</span><span class='hs-layout'>(</span></a><span class='hs-varid'>elems</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1622 : (AVL2.AVL {lq_tmp$x##1621 : a | lq_tmp$x##1621 &lt; x##a19j}) | lq_tmp$x##1622 == l##a19k
+                                                                               &amp;&amp; AVL2.getHeight lq_tmp$x##1622 &gt;= 0
+                                                                               &amp;&amp; AVL2.realHeight lq_tmp$x##1622 &gt;= 0}</span><span class='hs-varid'>l</span></a><span class='hs-layout'>)</span>       <span class='hs-varop'>`S.union`</span>
+<span class=hs-linenum>268: </span>                       <a class=annot href="#"><span class=annottext>{lq_tmp$x##1653 : (Data.Set.Internal.Set {lq_tmp$x##1660 : a | $k_##1659[@a##a1iQ:=a##a1iQ][VV##1658:=lq_tmp$x##1660][lq_tmp$x##1656:=fix$36$$36$dOrd_a1iR][lq_tmp$x##1657:=r##a19l]}) | lq_tmp$x##1653 == AVL2.elems r##a19l}</span><span class='hs-layout'>(</span></a><span class='hs-varid'>elems</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1664 : (AVL2.AVL {lq_tmp$x##1663 : a | lq_tmp$x##1663 &gt; x##a19j}) | lq_tmp$x##1664 == r##a19l
+                                                                               &amp;&amp; AVL2.getHeight lq_tmp$x##1664 &gt;= 0
+                                                                               &amp;&amp; AVL2.realHeight lq_tmp$x##1664 &gt;= 0
+                                                                               &amp;&amp; 0 - 1 &lt;= AVL2.realHeight l##a19k - AVL2.realHeight lq_tmp$x##1664
+                                                                               &amp;&amp; AVL2.realHeight l##a19k - AVL2.realHeight lq_tmp$x##1664 &lt;= 1}</span><span class='hs-varid'>r</span></a><span class='hs-layout'>)</span>
+<span class=hs-linenum>269: </span><span class='hs-definition'>elems</span> <span class='hs-conid'>Leaf</span>           <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{VV : forall a .
+      {lq_tmp$x##1556 : (Data.Set.Internal.Set a) | Set_emp lq_tmp$x##1556} | VV == Data.Set.Internal.empty}</span><span class='hs-conid'>S.empty</span></a>
+<span class=hs-linenum>270: </span><span class='hs-comment'>{-
+-- FIXME https://github.com/ucsd-progsys/liquidhaskell/issues/332
+{-@ member :: (Ord a) =&gt; x:a -&gt; t:AVL a -&gt; {v: Bool | v &lt;=&gt; hasElem x t} @-}
+member x t = undefined
+-}</span>
+<span class=hs-linenum>275: </span><span class='hs-keyword'>{-@</span> <span class='hs-keyword'>type</span> <span class='hs-conid'>BoolP</span> <span class='hs-conid'>P</span> <span class='hs-keyglyph'>=</span> <span class='hs-layout'>{</span><span class='hs-varid'>v</span><span class='hs-conop'>:</span><span class='hs-conid'>Bool</span> <span class='hs-keyglyph'>|</span> <span class='hs-varid'>v</span> <span class='hs-varop'>&lt;=&gt;</span> <span class='hs-conid'>P</span><span class='hs-layout'>}</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum>276: </span>
+<span class=hs-linenum>277: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>inline</span> <span class='hs-varid'>hasElem</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum>278: </span><a class=annot href="#"><span class=annottext>forall a .
+(GHC.Internal.Classes.Ord&lt;[]&gt; a) =&gt;
+lq_tmp$x##1691:a -&gt; lq_tmp$x##1692:(AVL2.AVL a) -&gt; {VV : GHC.Internal.Types.Bool | VV &lt;=&gt; Set_mem lq_tmp$x##1691 (AVL2.elems lq_tmp$x##1692)}</span><span class='hs-definition'>hasElem</span></a> <a class=annot href="#"><span class=annottext>a</span><span class='hs-varid'>x</span></a> <a class=annot href="#"><span class=annottext>(AVL2.AVL a)</span><span class='hs-varid'>t</span></a> <span class='hs-keyglyph'>=</span> <span class='hs-conid'>S.member</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1731 : a | lq_tmp$x##1731 == x##a19y}</span><span class='hs-varid'>x</span></a> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1701 : (Data.Set.Internal.Set {lq_tmp$x##1708 : a | $k_##1707[@a##a1iQ:=a##a1jq][VV##1706:=lq_tmp$x##1708][lq_tmp$x##1704:=fix$36$$36$dOrd_a1jI][lq_tmp$x##1705:=t##a19z]}) | lq_tmp$x##1701 == AVL2.elems t##a19z}</span><span class='hs-layout'>(</span></a><span class='hs-varid'>elems</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1712 : (AVL2.AVL a) | lq_tmp$x##1712 == t##a19z
+                                 &amp;&amp; AVL2.getHeight lq_tmp$x##1712 &gt;= 0
+                                 &amp;&amp; AVL2.realHeight lq_tmp$x##1712 &gt;= 0}</span><span class='hs-varid'>t</span></a><span class='hs-layout'>)</span>
+<span class=hs-linenum>279: </span>
+<span class=hs-linenum>280: </span><span class='hs-comment'>{-}
+{-@ insertAPI :: (Ord a) =&gt; a -&gt; s:AVL a -&gt; {t:AVL a | addElem x s t} @-}
+insertAPI x s = insert' x s
+-}</span>
+<span class=hs-linenum>284: </span>
+<span class=hs-linenum>285: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>inline</span> <span class='hs-varid'>addElem</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum>286: </span><span class='hs-definition'>addElem</span>       <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Ord</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>=&gt;</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>AVL</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>AVL</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Bool</span>
+<span class=hs-linenum>287: </span><a class=annot href="#"><span class=annottext>forall a .
+(GHC.Internal.Classes.Ord&lt;[]&gt; a) =&gt;
+lq_tmp$x##1739:a -&gt; lq_tmp$x##1740:(AVL2.AVL a) -&gt; lq_tmp$x##1741:(AVL2.AVL a) -&gt; {VV : GHC.Internal.Types.Bool | VV &lt;=&gt; AVL2.elems lq_tmp$x##1741 == Set_cup (AVL2.elems lq_tmp$x##1740) (Set_sng lq_tmp$x##1739)}</span><span class='hs-definition'>addElem</span></a> <a class=annot href="#"><span class=annottext>a</span><span class='hs-varid'>x</span></a> <a class=annot href="#"><span class=annottext>(AVL2.AVL a)</span><span class='hs-varid'>s</span></a> <a class=annot href="#"><span class=annottext>(AVL2.AVL a)</span><span class='hs-varid'>t</span></a> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1776 : (Data.Set.Internal.Set {lq_tmp$x##1783 : a | $k_##1782[@a##a1iQ:=a##a1jU][VV##1781:=lq_tmp$x##1783][lq_tmp$x##1779:=fix$36$$36$dOrd_a1jV][lq_tmp$x##1780:=t##a19D]}) | lq_tmp$x##1776 == AVL2.elems t##a19D}</span><span class='hs-layout'>(</span></a><span class='hs-varid'>elems</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1787 : (AVL2.AVL a) | lq_tmp$x##1787 == t##a19D
+                                 &amp;&amp; AVL2.getHeight lq_tmp$x##1787 &gt;= 0
+                                 &amp;&amp; AVL2.realHeight lq_tmp$x##1787 &gt;= 0}</span><span class='hs-varid'>t</span></a><span class='hs-layout'>)</span> <span class='hs-varop'>==</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1794 : (Data.Set.Internal.Set {lq_tmp$x##1801 : a | $k_##1800[@a##a1iQ:=a##a1jU][VV##1799:=lq_tmp$x##1801][lq_tmp$x##1797:=fix$36$$36$dOrd_a1jV][lq_tmp$x##1798:=s##a19C]}) | lq_tmp$x##1794 == AVL2.elems s##a19C}</span><span class='hs-layout'>(</span></a><span class='hs-varid'>elems</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1805 : (AVL2.AVL a) | lq_tmp$x##1805 == s##a19C
+                                 &amp;&amp; AVL2.getHeight lq_tmp$x##1805 &gt;= 0
+                                 &amp;&amp; AVL2.realHeight lq_tmp$x##1805 &gt;= 0}</span><span class='hs-varid'>s</span></a><span class='hs-layout'>)</span> <span class='hs-varop'>`S.union`</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1809 : (Data.Set.Internal.Set {lq_tmp$x##1814 : a | $k_##1813[@a##xo:=a##a1jU][VV##1812:=lq_tmp$x##1814][lq_tmp$x##1811:=x##a19B]}) | lq_tmp$x##1809 == Set_sng x##a19B}</span><span class='hs-layout'>(</span></a><span class='hs-conid'>S.singleton</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1815 : a | lq_tmp$x##1815 == x##a19B}</span><span class='hs-varid'>x</span></a><span class='hs-layout'>)</span>
+<span class=hs-linenum>288: </span>
+<span class=hs-linenum>289: </span><span class='hs-comment'>{-
+{-@ deleteAPI :: (Ord a) =&gt; a -&gt; s:AVL a -&gt; {t: AVL a | delElem x s t} @-}
+deleteAPI x s = delete x s
+-}</span>
+<span class=hs-linenum>293: </span>
+<span class=hs-linenum>294: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>inline</span> <span class='hs-varid'>delElem</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum>295: </span><span class='hs-definition'>delElem</span>       <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Ord</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>=&gt;</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>AVL</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>AVL</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Bool</span>
+<span class=hs-linenum>296: </span><a class=annot href="#"><span class=annottext>forall a .
+(GHC.Internal.Classes.Ord&lt;[]&gt; a) =&gt;
+lq_tmp$x##1873:a -&gt; lq_tmp$x##1874:(AVL2.AVL a) -&gt; lq_tmp$x##1875:(AVL2.AVL a) -&gt; {VV : GHC.Internal.Types.Bool | VV &lt;=&gt; AVL2.elems lq_tmp$x##1875 == Set_dif (AVL2.elems lq_tmp$x##1874) (Set_sng lq_tmp$x##1873)}</span><span class='hs-definition'>delElem</span></a> <a class=annot href="#"><span class=annottext>a</span><span class='hs-varid'>x</span></a> <a class=annot href="#"><span class=annottext>(AVL2.AVL a)</span><span class='hs-varid'>s</span></a> <a class=annot href="#"><span class=annottext>(AVL2.AVL a)</span><span class='hs-varid'>t</span></a> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1910 : (Data.Set.Internal.Set {lq_tmp$x##1917 : a | $k_##1916[@a##a1iQ:=a##a1kh][VV##1915:=lq_tmp$x##1917][lq_tmp$x##1913:=fix$36$$36$dOrd_a1ki][lq_tmp$x##1914:=t##a19G]}) | lq_tmp$x##1910 == AVL2.elems t##a19G}</span><span class='hs-layout'>(</span></a><span class='hs-varid'>elems</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1921 : (AVL2.AVL a) | lq_tmp$x##1921 == t##a19G
+                                 &amp;&amp; AVL2.getHeight lq_tmp$x##1921 &gt;= 0
+                                 &amp;&amp; AVL2.realHeight lq_tmp$x##1921 &gt;= 0}</span><span class='hs-varid'>t</span></a><span class='hs-layout'>)</span> <span class='hs-varop'>==</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1928 : (Data.Set.Internal.Set {lq_tmp$x##1935 : a | $k_##1934[@a##a1iQ:=a##a1kh][VV##1933:=lq_tmp$x##1935][lq_tmp$x##1931:=fix$36$$36$dOrd_a1ki][lq_tmp$x##1932:=s##a19F]}) | lq_tmp$x##1928 == AVL2.elems s##a19F}</span><span class='hs-layout'>(</span></a><span class='hs-varid'>elems</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1939 : (AVL2.AVL a) | lq_tmp$x##1939 == s##a19F
+                                 &amp;&amp; AVL2.getHeight lq_tmp$x##1939 &gt;= 0
+                                 &amp;&amp; AVL2.realHeight lq_tmp$x##1939 &gt;= 0}</span><span class='hs-varid'>s</span></a><span class='hs-layout'>)</span> <span class='hs-varop'>`S.difference`</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1943 : (Data.Set.Internal.Set {lq_tmp$x##1948 : a | $k_##1947[@a##xo:=a##a1kh][VV##1946:=lq_tmp$x##1948][lq_tmp$x##1945:=x##a19E]}) | lq_tmp$x##1943 == Set_sng x##a19E}</span><span class='hs-layout'>(</span></a><span class='hs-conid'>S.singleton</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1949 : a | lq_tmp$x##1949 == x##a19E}</span><span class='hs-varid'>x</span></a><span class='hs-layout'>)</span></pre>
+</body>
+</html>

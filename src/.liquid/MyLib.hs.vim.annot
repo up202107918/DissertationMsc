@@ -1,0 +1,2 @@
+4:1-4:9::MyLib.someFunc :: "(GHC.Internal.Types.IO ())"
+4:21-4:31::lq_anf$##7205759403792796929 :: "[GHC.Internal.Types.Char]"

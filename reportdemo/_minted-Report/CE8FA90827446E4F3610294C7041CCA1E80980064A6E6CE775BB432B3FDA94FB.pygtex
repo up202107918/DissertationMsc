@@ -1,0 +1,140 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{c+cm}{\PYGZob{}\PYGZhy{}\PYGZsh{} OPTIONS\PYGZus{}GHC \PYGZhy{}fplugin=LiquidHaskell \PYGZsh{}\PYGZhy{}\PYGZcb{}}
+
+\PYG{c+cm}{\PYGZob{}\PYGZhy{}@ LIQUID \PYGZdq{}\PYGZhy{}\PYGZhy{}ple\PYGZdq{} @\PYGZhy{}\PYGZcb{}}
+
+\PYG{c+c1}{\PYGZhy{}\PYGZhy{}}
+\PYG{c+c1}{\PYGZhy{}\PYGZhy{} Purely functional queues a.k.a. \PYGZdq{}Batched queues\PYGZdq{}}
+\PYG{c+c1}{\PYGZhy{}\PYGZhy{} O(1) amortized cost for all operations}
+\PYG{c+c1}{\PYGZhy{}\PYGZhy{}}
+\PYG{k+kr}{module}\PYG{+w}{ }\PYG{n+nn}{Queue}\PYG{+w}{ }\PYG{k+kr}{where}
+
+\PYG{k+kr}{import}\PYG{+w}{ }\PYG{n+nn}{Language.Haskell.Liquid.ProofCombinators}
+
+\PYG{c+c1}{\PYGZhy{}\PYGZhy{} front is in direct order}
+\PYG{c+c1}{\PYGZhy{}\PYGZhy{} back is in reverse order}
+\PYG{c+c1}{\PYGZhy{}\PYGZhy{} invariant: front is empty =\PYGZgt{} back is also empty}
+\PYG{c+c1}{\PYGZhy{}\PYGZhy{} use a newtype to allow custom instance declarations}
+
+\PYG{c+c1}{\PYGZhy{}\PYGZhy{} Purely functional queues a.k.a. \PYGZdq{}Batched queues\PYGZdq{}}
+
+\PYG{c+cm}{\PYGZob{}\PYGZhy{}@ data Queue a = Queue \PYGZob{} fr :: [a], bk :: \PYGZob{}v:[a] | (len fr == 0) =\PYGZgt{} (len v == 0)\PYGZcb{} \PYGZcb{} @\PYGZhy{}\PYGZcb{}}
+\PYG{k+kr}{data}\PYG{+w}{ }\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{n}{a}\PYG{+w}{ }\PYG{o+ow}{=}\PYG{+w}{ }\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{p}{[}\PYG{n}{a}\PYG{p}{]}\PYG{+w}{ }\PYG{p}{[}\PYG{n}{a}\PYG{p}{]}
+\PYG{+w}{                }\PYG{k+kr}{deriving}\PYG{+w}{ }\PYG{k+kt}{Show}
+
+\PYG{n+nf}{empty}\PYG{+w}{ }\PYG{o+ow}{::}\PYG{+w}{ }\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{n}{a}
+\PYG{n+nf}{empty}\PYG{+w}{ }\PYG{o+ow}{=}\PYG{+w}{ }\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{k+kt}{[]}\PYG{+w}{ }\PYG{k+kt}{[]}
+
+\PYG{c+cm}{\PYGZob{}\PYGZhy{}@ reflect isEmpty @\PYGZhy{}\PYGZcb{}}
+\PYG{c+cm}{\PYGZob{}\PYGZhy{}@ isEmpty :: q:Queue a \PYGZhy{}\PYGZgt{} \PYGZob{}v:Bool | v \PYGZlt{}=\PYGZgt{} (len (fr q) == 0)\PYGZcb{} @\PYGZhy{}\PYGZcb{}}
+\PYG{n+nf}{isEmpty}\PYG{+w}{ }\PYG{o+ow}{::}\PYG{+w}{ }\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{n}{a}\PYG{+w}{ }\PYG{o+ow}{\PYGZhy{}\PYGZgt{}}\PYG{+w}{ }\PYG{k+kt}{Bool}
+\PYG{n+nf}{isEmpty}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{n}{fr}\PYG{+w}{ }\PYG{n}{bk}\PYG{p}{)}\PYG{+w}{ }\PYG{o+ow}{=}\PYG{+w}{ }\PYG{n}{null}\PYG{+w}{ }\PYG{n}{fr}
+
+\PYG{c+c1}{\PYGZhy{}\PYGZhy{} add to the back}
+\PYG{c+cm}{\PYGZob{}\PYGZhy{}@ reflect enqueue @\PYGZhy{}\PYGZcb{}}
+\PYG{n+nf}{enqueue}\PYG{+w}{ }\PYG{o+ow}{::}\PYG{+w}{ }\PYG{n}{a}\PYG{+w}{ }\PYG{o+ow}{\PYGZhy{}\PYGZgt{}}\PYG{+w}{ }\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{n}{a}\PYG{+w}{ }\PYG{o+ow}{\PYGZhy{}\PYGZgt{}}\PYG{+w}{ }\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{n}{a}
+\PYG{n+nf}{enqueue}\PYG{+w}{ }\PYG{n}{x}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{n}{fr}\PYG{+w}{ }\PYG{n}{bk}\PYG{p}{)}\PYG{+w}{ }\PYG{o+ow}{=}\PYG{+w}{ }\PYG{n}{makeQueue}\PYG{+w}{ }\PYG{n}{fr}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{x}\PYG{k+kt}{:}\PYG{n}{bk}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZhy{}\PYGZhy{} front element}
+\PYG{c+cm}{\PYGZob{}\PYGZhy{}@ reflect front @\PYGZhy{}\PYGZcb{}}
+\PYG{c+cm}{\PYGZob{}\PYGZhy{}@ front :: q:\PYGZob{}Queue a | len (fr q) \PYGZgt{} 0\PYGZcb{} \PYGZhy{}\PYGZgt{} a @\PYGZhy{}\PYGZcb{}}
+\PYG{n+nf}{front}\PYG{+w}{ }\PYG{o+ow}{::}\PYG{+w}{ }\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{n}{a}\PYG{+w}{ }\PYG{o+ow}{\PYGZhy{}\PYGZgt{}}\PYG{+w}{ }\PYG{n}{a}
+\PYG{n+nf}{front}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{x}\PYG{k+kt}{:}\PYG{n}{fr}\PYG{p}{)}\PYG{+w}{ }\PYG{n}{bk}\PYG{p}{)}\PYG{+w}{ }\PYG{o+ow}{=}\PYG{+w}{ }\PYG{n}{x}
+\PYG{c+c1}{\PYGZhy{}\PYGZhy{}front \PYGZus{}      = error \PYGZdq{}empty queue\PYGZdq{}}
+
+\PYG{c+c1}{\PYGZhy{}\PYGZhy{} remove the front}
+\PYG{c+cm}{\PYGZob{}\PYGZhy{}@ reflect dequeue @\PYGZhy{}\PYGZcb{}}
+\PYG{c+cm}{\PYGZob{}\PYGZhy{}@ dequeue :: q:\PYGZob{}Queue a | len (fr q) \PYGZgt{} 0\PYGZcb{} \PYGZhy{}\PYGZgt{} Queue a @\PYGZhy{}\PYGZcb{}}
+\PYG{n+nf}{dequeue}\PYG{+w}{ }\PYG{o+ow}{::}\PYG{+w}{ }\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{n}{a}\PYG{+w}{ }\PYG{o+ow}{\PYGZhy{}\PYGZgt{}}\PYG{+w}{ }\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{n}{a}
+\PYG{n+nf}{dequeue}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{x}\PYG{k+kt}{:}\PYG{n}{fr}\PYG{p}{)}\PYG{+w}{ }\PYG{n}{bk}\PYG{p}{)}\PYG{+w}{ }\PYG{o+ow}{=}\PYG{+w}{ }\PYG{n}{makeQueue}\PYG{+w}{ }\PYG{n}{fr}\PYG{+w}{ }\PYG{n}{bk}
+\PYG{c+c1}{\PYGZhy{}\PYGZhy{}dequeue \PYGZus{}                 = error \PYGZdq{}empty queue\PYGZdq{}}
+
+\PYG{c+c1}{\PYGZhy{}\PYGZhy{} smart constructor}
+\PYG{c+cm}{\PYGZob{}\PYGZhy{}@ reflect makeQueue @\PYGZhy{}\PYGZcb{}}
+\PYG{n+nf}{makeQueue}\PYG{+w}{ }\PYG{o+ow}{::}\PYG{+w}{ }\PYG{p}{[}\PYG{n}{a}\PYG{p}{]}\PYG{+w}{ }\PYG{o+ow}{\PYGZhy{}\PYGZgt{}}\PYG{+w}{ }\PYG{p}{[}\PYG{n}{a}\PYG{p}{]}\PYG{+w}{ }\PYG{o+ow}{\PYGZhy{}\PYGZgt{}}\PYG{+w}{ }\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{n}{a}
+\PYG{n+nf}{makeQueue}\PYG{+w}{ }\PYG{k+kt}{[]}\PYG{+w}{ }\PYG{n}{bk}\PYG{+w}{ }\PYG{o+ow}{=}\PYG{+w}{ }\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{reverse}\PYG{+w}{ }\PYG{n}{bk}\PYG{p}{)}\PYG{+w}{ }\PYG{k+kt}{[]}
+\PYG{n+nf}{makeQueue}\PYG{+w}{ }\PYG{n}{fr}\PYG{+w}{ }\PYG{n}{bk}\PYG{+w}{ }\PYG{o+ow}{=}\PYG{+w}{ }\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{n}{fr}\PYG{+w}{ }\PYG{n}{bk}
+
+\PYG{c+c1}{\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}}
+\PYG{c+c1}{\PYGZhy{}\PYGZhy{} Testing amortized bounds}
+\PYG{c+c1}{\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}}
+
+\PYG{c+c1}{\PYGZhy{}\PYGZhy{} actual cost functions}
+\PYG{c+cm}{\PYGZob{}\PYGZhy{}@ reflect enqueueT @\PYGZhy{}\PYGZcb{}}
+\PYG{c+cm}{\PYGZob{}\PYGZhy{}@ enqueueT :: a \PYGZhy{}\PYGZgt{} Queue a \PYGZhy{}\PYGZgt{} \PYGZob{}x:Int | x \PYGZgt{}= 1\PYGZcb{} @\PYGZhy{}\PYGZcb{}}
+\PYG{n+nf}{enqueueT}\PYG{+w}{ }\PYG{o+ow}{::}\PYG{+w}{ }\PYG{n}{a}\PYG{+w}{ }\PYG{o+ow}{\PYGZhy{}\PYGZgt{}}\PYG{+w}{ }\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{n}{a}\PYG{+w}{ }\PYG{o+ow}{\PYGZhy{}\PYGZgt{}}\PYG{+w}{ }\PYG{k+kt}{Int}
+\PYG{n+nf}{enqueueT}\PYG{+w}{ }\PYG{n}{x}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{n}{fr}\PYG{+w}{ }\PYG{n}{bk}\PYG{p}{)}\PYG{+w}{ }\PYG{o+ow}{=}\PYG{+w}{ }\PYG{n}{makeQueueT}\PYG{+w}{ }\PYG{n}{fr}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{x}\PYG{k+kt}{:}\PYG{n}{bk}\PYG{p}{)}
+
+\PYG{c+cm}{\PYGZob{}\PYGZhy{}@ reflect dequeueT @\PYGZhy{}\PYGZcb{}}
+\PYG{c+cm}{\PYGZob{}\PYGZhy{}@ dequeueT :: q:\PYGZob{}Queue a | len (fr q) \PYGZgt{} 0\PYGZcb{} \PYGZhy{}\PYGZgt{} \PYGZob{}x:Int | x \PYGZgt{}= 1\PYGZcb{} @\PYGZhy{}\PYGZcb{}}
+\PYG{n+nf}{dequeueT}\PYG{+w}{ }\PYG{o+ow}{::}\PYG{+w}{ }\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{n}{a}\PYG{+w}{ }\PYG{o+ow}{\PYGZhy{}\PYGZgt{}}\PYG{+w}{ }\PYG{k+kt}{Int}
+\PYG{n+nf}{dequeueT}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{x}\PYG{k+kt}{:}\PYG{n}{fr}\PYG{p}{)}\PYG{+w}{ }\PYG{n}{bk}\PYG{p}{)}\PYG{+w}{ }\PYG{o+ow}{=}\PYG{+w}{ }\PYG{n}{makeQueueT}\PYG{+w}{ }\PYG{n}{fr}\PYG{+w}{ }\PYG{n}{bk}
+
+\PYG{c+cm}{\PYGZob{}\PYGZhy{}@ reflect makeQueueT @\PYGZhy{}\PYGZcb{}}
+\PYG{c+cm}{\PYGZob{}\PYGZhy{}@ makeQueueT :: fr:[a] \PYGZhy{}\PYGZgt{} bk:[a] \PYGZhy{}\PYGZgt{} \PYGZob{}x:Int | x \PYGZgt{}= 1\PYGZcb{} @\PYGZhy{}\PYGZcb{}}
+\PYG{n+nf}{makeQueueT}\PYG{+w}{ }\PYG{o+ow}{::}\PYG{+w}{ }\PYG{p}{[}\PYG{n}{a}\PYG{p}{]}\PYG{+w}{ }\PYG{o+ow}{\PYGZhy{}\PYGZgt{}}\PYG{+w}{ }\PYG{p}{[}\PYG{n}{a}\PYG{p}{]}\PYG{+w}{ }\PYG{o+ow}{\PYGZhy{}\PYGZgt{}}\PYG{+w}{ }\PYG{k+kt}{Int}
+\PYG{n+nf}{makeQueueT}\PYG{+w}{ }\PYG{k+kt}{[]}\PYG{+w}{ }\PYG{n}{bk}\PYG{+w}{ }\PYG{o+ow}{=}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{length}\PYG{+w}{ }\PYG{n}{bk}
+\PYG{n+nf}{makeQueueT}\PYG{+w}{ }\PYG{n}{fr}\PYG{+w}{ }\PYG{n}{bk}\PYG{+w}{ }\PYG{o+ow}{=}\PYG{+w}{ }\PYG{l+m+mi}{1}
+
+\PYG{c+c1}{\PYGZhy{}\PYGZhy{} potential}
+\PYG{c+cm}{\PYGZob{}\PYGZhy{}@ reflect phi @\PYGZhy{}\PYGZcb{}}
+\PYG{c+cm}{\PYGZob{}\PYGZhy{}@ phi :: Queue a \PYGZhy{}\PYGZgt{} Nat @\PYGZhy{}\PYGZcb{}}
+\PYG{n+nf}{phi}\PYG{+w}{ }\PYG{o+ow}{::}\PYG{+w}{ }\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{n}{a}\PYG{+w}{ }\PYG{o+ow}{\PYGZhy{}\PYGZgt{}}\PYG{+w}{ }\PYG{k+kt}{Int}
+\PYG{n+nf}{phi}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{n}{fr}\PYG{+w}{ }\PYG{n}{bk}\PYG{p}{)}\PYG{+w}{ }\PYG{o+ow}{=}\PYG{+w}{ }\PYG{n}{length}\PYG{+w}{ }\PYG{n}{bk}
+
+\PYG{c+cm}{\PYGZob{}\PYGZhy{}@ ple enqueueP @\PYGZhy{}\PYGZcb{}}
+\PYG{c+cm}{\PYGZob{}\PYGZhy{}@ enqueueP :: x:a \PYGZhy{}\PYGZgt{} q:Queue a \PYGZhy{}\PYGZgt{} \PYGZob{}enqueueT x q + phi (enqueue x q) \PYGZhy{} phi q \PYGZlt{}= 2\PYGZcb{} @\PYGZhy{}\PYGZcb{}}
+\PYG{n+nf}{enqueueP}\PYG{+w}{ }\PYG{o+ow}{::}\PYG{+w}{ }\PYG{n}{a}\PYG{+w}{ }\PYG{o+ow}{\PYGZhy{}\PYGZgt{}}\PYG{+w}{ }\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{n}{a}\PYG{+w}{ }\PYG{o+ow}{\PYGZhy{}\PYGZgt{}}\PYG{+w}{ }\PYG{k+kt}{Proof}
+\PYG{n+nf}{enqueueP}\PYG{+w}{ }\PYG{n}{x}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{k+kt}{[]}\PYG{+w}{ }\PYG{n}{bk}\PYG{p}{)}
+\PYG{+w}{    }\PYG{o+ow}{=}\PYG{+w}{ }\PYG{n}{enqueueT}\PYG{+w}{ }\PYG{n}{x}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{k+kt}{[]}\PYG{+w}{ }\PYG{n}{bk}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{phi}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{enqueue}\PYG{+w}{ }\PYG{n}{x}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{k+kt}{[]}\PYG{+w}{ }\PYG{n}{bk}\PYG{p}{))}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{+w}{ }\PYG{n}{phi}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{k+kt}{[]}\PYG{+w}{ }\PYG{n}{bk}\PYG{p}{)}
+\PYG{+w}{    }\PYG{c+c1}{\PYGZhy{}\PYGZhy{} using the definitions of enqueueT and enqueue}
+\PYG{+w}{    }\PYG{o}{===}\PYG{+w}{ }\PYG{n}{makeQueueT}\PYG{+w}{ }\PYG{k+kt}{[]}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{x}\PYG{k+kt}{:}\PYG{n}{bk}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{phi}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{makeQueue}\PYG{+w}{ }\PYG{k+kt}{[]}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{x}\PYG{k+kt}{:}\PYG{n}{bk}\PYG{p}{))}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{+w}{ }\PYG{n}{phi}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{k+kt}{[]}\PYG{+w}{ }\PYG{n}{bk}\PYG{p}{)}
+\PYG{+w}{    }\PYG{c+c1}{\PYGZhy{}\PYGZhy{} using the definiton of makeQueueT and makeQueue}
+\PYG{+w}{    }\PYG{o}{===}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{length}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{x}\PYG{k+kt}{:}\PYG{n}{bk}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{phi}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{reverse}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{x}\PYG{k+kt}{:}\PYG{n}{bk}\PYG{p}{))}\PYG{+w}{ }\PYG{k+kt}{[]}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{+w}{ }\PYG{n}{phi}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{k+kt}{[]}\PYG{+w}{ }\PYG{n}{bk}\PYG{p}{)}
+\PYG{+w}{    }\PYG{c+c1}{\PYGZhy{}\PYGZhy{} using the definition of phi (Queue fr bk)}
+\PYG{+w}{    }\PYG{o}{===}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{length}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{x}\PYG{k+kt}{:}\PYG{n}{bk}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{length}\PYG{+w}{ }\PYG{k+kt}{[]}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{+w}{ }\PYG{n}{length}\PYG{+w}{ }\PYG{n}{bk}
+\PYG{+w}{    }\PYG{c+c1}{\PYGZhy{}\PYGZhy{} length [] = 0}
+\PYG{+w}{    }\PYG{o}{===}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{length}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{x}\PYG{k+kt}{:}\PYG{n}{bk}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{+w}{ }\PYG{n}{length}\PYG{+w}{ }\PYG{n}{bk}
+\PYG{+w}{    }\PYG{c+c1}{\PYGZhy{}\PYGZhy{} length (x:bk) = 1 + length bk}
+\PYG{+w}{    }\PYG{o}{===}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{length}\PYG{+w}{ }\PYG{n}{bk}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{+w}{ }\PYG{n}{length}\PYG{+w}{ }\PYG{n}{bk}
+\PYG{+w}{    }\PYG{o}{===}\PYG{+w}{ }\PYG{l+m+mi}{2}\PYG{+w}{   }\PYG{c+c1}{\PYGZhy{}\PYGZhy{} \PYGZlt{}= 2}
+\PYG{+w}{    }\PYG{o}{***}\PYG{+w}{ }\PYG{k+kt}{QED}
+\PYG{n+nf}{enqueueP}\PYG{+w}{ }\PYG{n}{x}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{n}{fr}\PYG{+w}{ }\PYG{n}{bk}\PYG{p}{)}
+\PYG{+w}{    }\PYG{o+ow}{=}\PYG{+w}{ }\PYG{n}{enqueueT}\PYG{+w}{ }\PYG{n}{x}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{n}{fr}\PYG{+w}{ }\PYG{n}{bk}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{phi}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{enqueue}\PYG{+w}{ }\PYG{n}{x}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{n}{fr}\PYG{+w}{ }\PYG{n}{bk}\PYG{p}{))}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{+w}{ }\PYG{n}{phi}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{n}{fr}\PYG{+w}{ }\PYG{n}{bk}\PYG{p}{)}
+\PYG{+w}{    }\PYG{c+c1}{\PYGZhy{}\PYGZhy{} using the definitions of enqueueT and enqueue}
+\PYG{+w}{    }\PYG{o}{===}\PYG{+w}{ }\PYG{n}{makeQueueT}\PYG{+w}{ }\PYG{n}{fr}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{x}\PYG{k+kt}{:}\PYG{n}{bk}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{phi}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{makeQueue}\PYG{+w}{ }\PYG{n}{fr}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{x}\PYG{k+kt}{:}\PYG{n}{bk}\PYG{p}{))}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{+w}{ }\PYG{n}{phi}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{n}{fr}\PYG{+w}{ }\PYG{n}{bk}\PYG{p}{)}
+\PYG{+w}{    }\PYG{c+c1}{\PYGZhy{}\PYGZhy{} using the definitions of makeQueueT and makeQueue}
+\PYG{+w}{    }\PYG{o}{===}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{phi}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{n}{fr}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{x}\PYG{k+kt}{:}\PYG{n}{bk}\PYG{p}{))}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{+w}{ }\PYG{n}{phi}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{n}{fr}\PYG{+w}{ }\PYG{n}{bk}\PYG{p}{)}
+\PYG{+w}{    }\PYG{c+c1}{\PYGZhy{}\PYGZhy{} using the definition of phi (Queue fr bk)}
+\PYG{+w}{    }\PYG{o}{===}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{length}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{x}\PYG{k+kt}{:}\PYG{n}{bk}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{+w}{ }\PYG{n}{length}\PYG{+w}{ }\PYG{n}{bk}
+\PYG{+w}{    }\PYG{c+c1}{\PYGZhy{}\PYGZhy{} length (x:bk) = 1 + length bk}
+\PYG{+w}{    }\PYG{o}{===}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{length}\PYG{+w}{ }\PYG{n}{bk}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{+w}{ }\PYG{n}{length}\PYG{+w}{ }\PYG{n}{bk}
+\PYG{+w}{    }\PYG{o}{===}\PYG{+w}{ }\PYG{l+m+mi}{2}\PYG{+w}{   }\PYG{c+c1}{\PYGZhy{}\PYGZhy{} \PYGZlt{}= 2}
+\PYG{+w}{    }\PYG{o}{***}\PYG{+w}{ }\PYG{k+kt}{QED}
+
+\PYG{c+cm}{\PYGZob{}\PYGZhy{}@ ple dequeueP @\PYGZhy{}\PYGZcb{}}
+\PYG{c+cm}{\PYGZob{}\PYGZhy{}@ dequeueP :: q:\PYGZob{}Queue a | len (fr q) \PYGZgt{} 0\PYGZcb{} \PYGZhy{}\PYGZgt{} \PYGZob{}dequeueT q + phi (dequeue q) \PYGZhy{} phi q \PYGZlt{}= 1\PYGZcb{} @\PYGZhy{}\PYGZcb{}}
+\PYG{n+nf}{dequeueP}\PYG{+w}{ }\PYG{o+ow}{::}\PYG{+w}{ }\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{n}{a}\PYG{+w}{ }\PYG{o+ow}{\PYGZhy{}\PYGZgt{}}\PYG{+w}{ }\PYG{k+kt}{Proof}
+\PYG{n+nf}{dequeueP}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{p}{[}\PYG{n}{x}\PYG{p}{]}\PYG{+w}{ }\PYG{n}{bk}\PYG{p}{)}
+\PYG{+w}{    }\PYG{o+ow}{=}\PYG{+w}{ }\PYG{n}{dequeueT}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{p}{[}\PYG{n}{x}\PYG{p}{]}\PYG{+w}{ }\PYG{n}{bk}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{phi}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{dequeue}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{p}{[}\PYG{n}{x}\PYG{p}{]}\PYG{+w}{ }\PYG{n}{bk}\PYG{p}{))}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{+w}{ }\PYG{n}{phi}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{p}{[}\PYG{n}{x}\PYG{p}{]}\PYG{+w}{ }\PYG{n}{bk}\PYG{p}{)}
+\PYG{+w}{    }\PYG{c+c1}{\PYGZhy{}\PYGZhy{} using the definitions of dequeueT and dequeue}
+\PYG{+w}{    }\PYG{o}{===}\PYG{+w}{ }\PYG{n}{makeQueueT}\PYG{+w}{ }\PYG{k+kt}{[]}\PYG{+w}{ }\PYG{n}{bk}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{phi}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{makeQueue}\PYG{+w}{ }\PYG{k+kt}{[]}\PYG{+w}{ }\PYG{n}{bk}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{+w}{ }\PYG{n}{phi}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{p}{[}\PYG{n}{x}\PYG{p}{]}\PYG{+w}{ }\PYG{n}{bk}\PYG{p}{)}
+\PYG{+w}{    }\PYG{c+c1}{\PYGZhy{}\PYGZhy{} using the definitions of makeQueueT and makeQueue}
+\PYG{+w}{    }\PYG{o}{===}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{length}\PYG{+w}{ }\PYG{n}{bk}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{phi}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{reverse}\PYG{+w}{ }\PYG{n}{bk}\PYG{p}{)}\PYG{+w}{ }\PYG{k+kt}{[]}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{+w}{ }\PYG{n}{phi}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{p}{[}\PYG{n}{x}\PYG{p}{]}\PYG{+w}{ }\PYG{n}{bk}\PYG{p}{)}
+\PYG{+w}{    }\PYG{c+c1}{\PYGZhy{}\PYGZhy{} using the definition of phi}
+\PYG{+w}{    }\PYG{o}{===}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{length}\PYG{+w}{ }\PYG{n}{bk}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{length}\PYG{+w}{ }\PYG{k+kt}{[]}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{+w}{ }\PYG{n}{length}\PYG{+w}{ }\PYG{n}{bk}
+\PYG{+w}{    }\PYG{c+c1}{\PYGZhy{}\PYGZhy{} length [] = 0}
+\PYG{+w}{    }\PYG{o}{===}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{+w}{   }\PYG{c+c1}{\PYGZhy{}\PYGZhy{} \PYGZlt{}= 1}
+\PYG{+w}{    }\PYG{o}{***}\PYG{+w}{ }\PYG{k+kt}{QED}
+\PYG{n+nf}{dequeueP}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{x}\PYG{k+kt}{:}\PYG{n}{fr}\PYG{p}{)}\PYG{+w}{ }\PYG{n}{bk}\PYG{p}{)}
+\PYG{+w}{    }\PYG{o+ow}{=}\PYG{+w}{ }\PYG{n}{dequeueT}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{x}\PYG{k+kt}{:}\PYG{n}{fr}\PYG{p}{)}\PYG{+w}{ }\PYG{n}{bk}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{phi}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{dequeue}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{x}\PYG{k+kt}{:}\PYG{n}{fr}\PYG{p}{)}\PYG{+w}{ }\PYG{n}{bk}\PYG{p}{))}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{+w}{ }\PYG{n}{phi}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{x}\PYG{k+kt}{:}\PYG{n}{fr}\PYG{p}{)}\PYG{+w}{ }\PYG{n}{bk}\PYG{p}{)}
+\PYG{+w}{    }\PYG{o}{===}\PYG{+w}{ }\PYG{n}{makeQueueT}\PYG{+w}{ }\PYG{n}{fr}\PYG{+w}{ }\PYG{n}{bk}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{phi}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{makeQueue}\PYG{+w}{ }\PYG{n}{fr}\PYG{+w}{ }\PYG{n}{bk}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{+w}{ }\PYG{n}{phi}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{x}\PYG{k+kt}{:}\PYG{n}{fr}\PYG{p}{)}\PYG{+w}{ }\PYG{n}{bk}\PYG{p}{)}
+\PYG{+w}{    }\PYG{c+c1}{\PYGZhy{}\PYGZhy{} using the definitions of makeQueueT and makeQueue}
+\PYG{+w}{    }\PYG{o}{===}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{phi}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{n}{fr}\PYG{+w}{ }\PYG{n}{bk}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{+w}{ }\PYG{n}{phi}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{Queue}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{x}\PYG{k+kt}{:}\PYG{n}{fr}\PYG{p}{)}\PYG{+w}{ }\PYG{n}{bk}\PYG{p}{)}
+\PYG{+w}{    }\PYG{c+c1}{\PYGZhy{}\PYGZhy{} using the definition of phi (Queue fr bk)}
+\PYG{+w}{    }\PYG{o}{===}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{length}\PYG{+w}{ }\PYG{n}{bk}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{+w}{ }\PYG{n}{length}\PYG{+w}{ }\PYG{n}{bk}
+\PYG{+w}{    }\PYG{o}{===}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{+w}{   }\PYG{c+c1}{\PYGZhy{}\PYGZhy{} \PYGZlt{}= 1}
+\PYG{+w}{    }\PYG{o}{***}\PYG{+w}{ }\PYG{k+kt}{QED}
+
+
+\end{Verbatim}

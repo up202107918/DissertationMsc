@@ -1,0 +1,221 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+<title>Deque.hs</title>
+</head>
+<head>
+<link type='text/css' rel='stylesheet' href='syntax.css' />
+</head>
+
+<body>
+<hr>
+Put mouse over identifiers to see inferred types
+<pre><span class=hs-linenum>  1: </span><a class=annot href="#"><span class=annottext>GHC.Internal.Types.Module</span><span class='hs-comment'>{-# OPTIONS_GHC -fplugin=LiquidHaskell #-}</span></a>
+<span class=hs-linenum>  2: </span><span class='hs-keyword'>{-@</span> <span class='hs-conid'>LIQUID</span> <span class='hs-str'>"--no-termination"</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum>  3: </span><span class='hs-comment'>-- Double-ended queues i.e. deques</span>
+<span class=hs-linenum>  4: </span><span class='hs-comment'>--</span>
+<span class=hs-linenum>  5: </span><span class='hs-keyword'>module</span> <span class='hs-conid'>Deque</span> <span class='hs-keyword'>where</span>
+<span class=hs-linenum>  6: </span>
+<span class=hs-linenum>  7: </span><span class='hs-comment'>--import Language.Haskell.Liquid.ProofCombinators</span>
+<span class=hs-linenum>  8: </span>
+<span class=hs-linenum>  9: </span><span class='hs-comment'>-- invariant: both front and rear have to be non-empty whenever the deque contains at least two elements</span>
+<span class=hs-linenum> 10: </span>
+<span class=hs-linenum> 11: </span><span class='hs-keyword'>{-@</span> <span class='hs-keyword'>data</span> <span class='hs-conid'>Deque</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>=</span> <span class='hs-conid'>Deque</span> <span class='hs-layout'>{</span><span class='hs-varid'>fr</span> <span class='hs-keyglyph'>::</span> <span class='hs-keyglyph'>[</span><span class='hs-varid'>a</span><span class='hs-keyglyph'>]</span><span class='hs-layout'>,</span> <span class='hs-varid'>bk</span> <span class='hs-keyglyph'>::</span> <span class='hs-keyglyph'>[</span><span class='hs-varid'>a</span><span class='hs-keyglyph'>]</span><span class='hs-layout'>}</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 12: </span><span class='hs-keyword'>data</span> <span class='hs-conid'>Deque</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>=</span> <span class='hs-conid'>Deque</span> <span class='hs-keyglyph'>[</span><span class='hs-varid'>a</span><span class='hs-keyglyph'>]</span> <span class='hs-keyglyph'>[</span><span class='hs-varid'>a</span><span class='hs-keyglyph'>]</span> <span class='hs-comment'>-- pair of front and back</span>
+<span class=hs-linenum> 13: </span>  <span class='hs-keyword'>deriving</span> <span class='hs-conid'>Show</span>
+<span class=hs-linenum> 14: </span>
+<span class=hs-linenum> 15: </span><span class='hs-definition'>empty</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Deque</span> <span class='hs-varid'>a</span>
+<span class=hs-linenum> 16: </span><a class=annot href="#"><span class=annottext>forall a . (Deque.Deque a)</span><span class='hs-definition'>empty</span></a> <span class='hs-keyglyph'>=</span> <span class='hs-conid'>Deque</span> <a class=annot href="#"><span class=annottext>{VV : forall a &lt; :: a a -&gt; Bool&gt;.
+      {v : [a]&lt;\x4 _ -&gt; a&lt;p x4&gt;&gt; | v == []
+                                   &amp;&amp; len v == 0} | VV == []}</span><span class='hs-conid'>[]</span></a> <a class=annot href="#"><span class=annottext>{VV : forall a &lt; :: a a -&gt; Bool&gt;.
+      {v : [a]&lt;\x4 _ -&gt; a&lt;p x4&gt;&gt; | v == []
+                                   &amp;&amp; len v == 0} | VV == []}</span><span class='hs-conid'>[]</span></a>
+<span class=hs-linenum> 17: </span>
+<span class=hs-linenum> 18: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>reflect</span> <span class='hs-varid'>isEmpty</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 19: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>isEmpty</span> <span class='hs-keyglyph'>::</span> <span class='hs-varid'>dq</span><span class='hs-conop'>:</span><span class='hs-conid'>Deque</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-keyword'>{v:</span><span class='hs-conid'>Bool</span> <span class='hs-keyword'>| v &lt;=&gt; (len (fr dq) == 0 &amp;&amp; len (bk dq) == 0)}</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 20: </span><span class='hs-definition'>isEmpty</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Deque</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Bool</span>
+<span class=hs-linenum> 21: </span><a class=annot href="#"><span class=annottext>forall a .
+x1:(Deque.Deque a) -&gt; {v : GHC.Internal.Types.Bool | v &lt;=&gt; len (bk x1) == 0
+                                                           &amp;&amp; len (fr x1) == 0}</span><span class='hs-definition'>isEmpty</span></a> <span class='hs-layout'>(</span><span class='hs-conid'>Deque</span> <span class='hs-conid'>[]</span> <span class='hs-conid'>[]</span><span class='hs-layout'>)</span> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Bool | v
+                               &amp;&amp; v == True}</span><span class='hs-conid'>True</span></a>
+<span class=hs-linenum> 22: </span><span class='hs-definition'>isEmpty</span> <span class='hs-keyword'>_</span>             <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Bool | not v
+                               &amp;&amp; v == False}</span><span class='hs-conid'>False</span></a>
+<span class=hs-linenum> 23: </span>
+<span class=hs-linenum> 24: </span>
+<span class=hs-linenum> 25: </span><span class='hs-comment'>-- push to the front and back;</span>
+<span class=hs-linenum> 26: </span><span class='hs-comment'>-- these are worst-case O(1)</span>
+<span class=hs-linenum> 27: </span><span class='hs-definition'>pushFront</span> <span class='hs-keyglyph'>::</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Deque</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Deque</span> <span class='hs-varid'>a</span>
+<span class=hs-linenum> 28: </span><a class=annot href="#"><span class=annottext>forall a . :a -&gt; :(Deque.Deque a) -&gt; (Deque.Deque a)</span><span class='hs-definition'>pushFront</span></a> <a class=annot href="#"><span class=annottext>a</span><span class='hs-varid'>x</span></a> <span class='hs-layout'>(</span><span class='hs-conid'>Deque</span> <span class='hs-varid'>fr</span> <span class='hs-varid'>bk</span><span class='hs-layout'>)</span> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{VV : forall a .
+      x1:[a] -&gt; x2:[a] -&gt; {v : (Deque.Deque a) | v == Deque x1 x2
+                                                 &amp;&amp; bk v == x2
+                                                 &amp;&amp; fr v == x1} | VV == Deque}</span><span class='hs-conid'>Deque</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == : x##a6hI fr##a6hJ
+           &amp;&amp; head v == x##a6hI
+           &amp;&amp; len v == 1 + len fr##a6hJ
+           &amp;&amp; lqdc##$select##GHC.Internal.Types.:##1 v == x##a6hI
+           &amp;&amp; lqdc##$select##GHC.Internal.Types.:##2 v == fr##a6hJ
+           &amp;&amp; tail v == fr##a6hJ}</span><span class='hs-layout'>(</span></a><a class=annot href="#"><span class=annottext>{v : a | v == x##a6hI}</span><span class='hs-varid'>x</span></a><span class='hs-conop'>:</span><a class=annot href="#"><span class=annottext>{v : [a] | v == fr##a6hJ
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>fr</span></a><span class='hs-layout'>)</span> <a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a6hK
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a>
+<span class=hs-linenum> 29: </span>
+<span class=hs-linenum> 30: </span><span class='hs-definition'>pushBack</span> <span class='hs-keyglyph'>::</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Deque</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Deque</span> <span class='hs-varid'>a</span>
+<span class=hs-linenum> 31: </span><a class=annot href="#"><span class=annottext>forall a . :a -&gt; :(Deque.Deque a) -&gt; (Deque.Deque a)</span><span class='hs-definition'>pushBack</span></a> <a class=annot href="#"><span class=annottext>a</span><span class='hs-varid'>x</span></a> <span class='hs-layout'>(</span><span class='hs-conid'>Deque</span> <span class='hs-varid'>fr</span> <span class='hs-varid'>bk</span><span class='hs-layout'>)</span> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{VV : forall a .
+      x1:[a] -&gt; x2:[a] -&gt; {v : (Deque.Deque a) | v == Deque x1 x2
+                                                 &amp;&amp; bk v == x2
+                                                 &amp;&amp; fr v == x1} | VV == Deque}</span><span class='hs-conid'>Deque</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == fr##a6hM
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>fr</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == : x##a6hL bk##a6hN
+           &amp;&amp; head v == x##a6hL
+           &amp;&amp; len v == 1 + len bk##a6hN
+           &amp;&amp; lqdc##$select##GHC.Internal.Types.:##1 v == x##a6hL
+           &amp;&amp; lqdc##$select##GHC.Internal.Types.:##2 v == bk##a6hN
+           &amp;&amp; tail v == bk##a6hN}</span><span class='hs-layout'>(</span></a><a class=annot href="#"><span class=annottext>{v : a | v == x##a6hL}</span><span class='hs-varid'>x</span></a><span class='hs-conop'>:</span><a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a6hN
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a><span class='hs-layout'>)</span>
+<span class=hs-linenum> 32: </span>
+<span class=hs-linenum> 33: </span><span class='hs-comment'>-- pop from the front or the back</span>
+<span class=hs-linenum> 34: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>popFront</span> <span class='hs-keyglyph'>::</span> <span class='hs-varid'>dq</span><span class='hs-conop'>:</span><span class='hs-keyword'>{Deque a | len (bk dq) &gt; 0}</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Deque</span> <span class='hs-varid'>a</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 35: </span><span class='hs-definition'>popFront</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Deque</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Deque</span> <span class='hs-varid'>a</span>
+<span class=hs-linenum> 36: </span><a class=annot href="#"><span class=annottext>forall a .
+:{dq : (Deque.Deque a) | len (bk dq) &gt; 0} -&gt; (Deque.Deque a)</span><span class='hs-definition'>popFront</span></a> <a class=annot href="#"><span class=annottext>{dq : (Deque.Deque a) | len (bk dq) &gt; 0}</span><span class='hs-varid'>dq</span></a> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{VV : forall a .
+      :(Deque.Deque a) -&gt; (Deque.Deque a) | VV == extract##a6hP}</span><span class='hs-varid'>extract</span></a> <a class=annot href="#"><span class=annottext>(Deque.Deque {v : a | True
+                      &amp;&amp; not False
+                      &amp;&amp; len (bk dq##a6hO) &gt; 0})</span><span class='hs-layout'>(</span></a><span class='hs-varid'>normalize</span> <a class=annot href="#"><span class=annottext>{v : (Deque.Deque a) | v == dq##a6hO
+                       &amp;&amp; len (bk v) &gt; 0}</span><span class='hs-varid'>dq</span></a><span class='hs-layout'>)</span>
+<span class=hs-linenum> 37: </span>  <span class='hs-keyword'>where</span>
+<span class=hs-linenum> 38: </span>    <span class=hs-error><a class=annot href="#"><span class=annottext>forall a . :(Deque.Deque a) -&gt; (Deque.Deque a)</span><span class='hs-varid'>extract</span></a></span><span class=hs-error> </span><span class=hs-error><span class='hs-layout'>(</span></span><span class=hs-error><span class='hs-conid'>Deque</span></span><span class=hs-error> </span><span class=hs-error><span class='hs-layout'>(</span></span><span class=hs-error><span class='hs-varid'>x</span></span><span class=hs-error><span class='hs-conop'>:</span></span><span class=hs-error><span class='hs-varid'>fr</span></span><span class=hs-error><span class='hs-layout'>)</span></span><span class=hs-error> </span><span class=hs-error><span class='hs-varid'>bk</span></span><span class=hs-error><span class='hs-layout'>)</span></span><span class=hs-error> </span><span class=hs-error><span class='hs-keyglyph'>=</span></span><span class=hs-error> </span><span class=hs-error><a class=annot href="#"><span class=annottext>{VV : forall a .
+      x1:[a] -&gt; x2:[a] -&gt; {v : (Deque.Deque a) | v == Deque x1 x2
+                                                 &amp;&amp; bk v == x2
+                                                 &amp;&amp; fr v == x1} | VV == Deque}</span><span class='hs-conid'>Deque</span></a></span> <a class=annot href="#"><span class=annottext>{v : [a] | v == fr##a6hR
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>fr</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a6hS
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a>
+<span class=hs-linenum> 39: </span>    <span class=hs-error><span class='hs-varid'>extract</span></span><span class=hs-error> </span><span class=hs-error><span class='hs-layout'>(</span></span><span class=hs-error><span class='hs-conid'>Deque</span></span><span class=hs-error> </span><span class=hs-error><span class='hs-conid'>[]</span></span><span class=hs-error> </span><span class=hs-error><span class='hs-keyglyph'>[</span></span><span class=hs-error><span class='hs-varid'>x</span></span><span class=hs-error><span class='hs-keyglyph'>]</span></span><span class=hs-error><span class='hs-layout'>)</span></span><span class=hs-error> </span><span class=hs-error><span class='hs-keyglyph'>=</span></span><span class=hs-error> </span><span class=hs-error><a class=annot href="#"><span class=annottext>{VV : forall a . (Deque.Deque a) | VV == empty}</span><span class='hs-varid'>empty</span></a></span>   <span class='hs-comment'>-- special case for a single element</span>
+<span class=hs-linenum> 40: </span>    <span class='hs-comment'>-- extract _              = error "popFront: empty deque"</span>
+<span class=hs-linenum> 41: </span>
+<span class=hs-linenum> 42: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>popBack</span> <span class='hs-keyglyph'>::</span> <span class='hs-varid'>dq</span><span class='hs-conop'>:</span><span class='hs-keyword'>{Deque a | len (bk dq) &gt; 0}</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Deque</span> <span class='hs-varid'>a</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 43: </span><span class='hs-definition'>popBack</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Deque</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Deque</span> <span class='hs-varid'>a</span>
+<span class=hs-linenum> 44: </span><a class=annot href="#"><span class=annottext>forall a .
+:{dq : (Deque.Deque a) | len (bk dq) &gt; 0} -&gt; (Deque.Deque a)</span><span class='hs-definition'>popBack</span></a> <a class=annot href="#"><span class=annottext>{dq : (Deque.Deque a) | len (bk dq) &gt; 0}</span><span class='hs-varid'>dq</span></a> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{VV : forall a .
+      :(Deque.Deque a) -&gt; (Deque.Deque a) | VV == extract##a6hV}</span><span class='hs-varid'>extract</span></a> <a class=annot href="#"><span class=annottext>(Deque.Deque a)</span><span class='hs-layout'>(</span></a><span class='hs-varid'>normalize</span> <a class=annot href="#"><span class=annottext>{v : (Deque.Deque a) | v == dq##a6hU
+                       &amp;&amp; len (bk v) &gt; 0}</span><span class='hs-varid'>dq</span></a><span class='hs-layout'>)</span>
+<span class=hs-linenum> 45: </span>  <span class='hs-keyword'>where</span>
+<span class=hs-linenum> 46: </span>    <span class=hs-error><a class=annot href="#"><span class=annottext>forall a . :(Deque.Deque a) -&gt; (Deque.Deque a)</span><span class='hs-varid'>extract</span></a></span><span class=hs-error> </span><span class=hs-error><span class='hs-layout'>(</span></span><span class=hs-error><span class='hs-conid'>Deque</span></span><span class=hs-error> </span><span class=hs-error><span class='hs-varid'>fr</span></span><span class=hs-error> </span><span class=hs-error><span class='hs-layout'>(</span></span><span class=hs-error><span class='hs-varid'>x</span></span><span class=hs-error><span class='hs-conop'>:</span></span><span class=hs-error><span class='hs-varid'>bk</span></span><span class=hs-error><span class='hs-layout'>)</span></span><span class=hs-error><span class='hs-layout'>)</span></span><span class=hs-error> </span><span class=hs-error><span class='hs-keyglyph'>=</span></span><span class=hs-error> </span><span class=hs-error><a class=annot href="#"><span class=annottext>{VV : forall a .
+      x1:[a] -&gt; x2:[a] -&gt; {v : (Deque.Deque a) | v == Deque x1 x2
+                                                 &amp;&amp; bk v == x2
+                                                 &amp;&amp; fr v == x1} | VV == Deque}</span><span class='hs-conid'>Deque</span></a></span><span class=hs-error> </span><span class=hs-error><a class=annot href="#"><span class=annottext>{v : [a] | v == fr##a6hW
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>fr</span></a></span><span class=hs-error> </span><span class=hs-error><a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a6hY
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a></span>
+<span class=hs-linenum> 47: </span>    <span class='hs-comment'>-- extract _                   = error "popBack: empty deque"</span>
+<span class=hs-linenum> 48: </span>
+<span class=hs-linenum> 49: </span><span class='hs-comment'>-- extract the front and back elements</span>
+<span class=hs-linenum> 50: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>front</span> <span class='hs-keyglyph'>::</span> <span class='hs-varid'>dq</span><span class='hs-conop'>:</span><span class='hs-keyword'>{Deque a | len (bk dq) &gt; 0}</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-varid'>a</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 51: </span><span class='hs-definition'>front</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Deque</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-varid'>a</span>
+<span class=hs-linenum> 52: </span><a class=annot href="#"><span class=annottext>forall a . :{dq : (Deque.Deque a) | len (bk dq) &gt; 0} -&gt; a</span><span class='hs-definition'>front</span></a> <a class=annot href="#"><span class=annottext>{dq : (Deque.Deque a) | len (bk dq) &gt; 0}</span><span class='hs-varid'>dq</span></a> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{VV : forall a . :(Deque.Deque a) -&gt; a | VV == extract##a6i0}</span><span class='hs-varid'>extract</span></a> <a class=annot href="#"><span class=annottext>(Deque.Deque {v : a | True
+                      &amp;&amp; not False
+                      &amp;&amp; len (bk dq##a6hZ) &gt; 0})</span><span class='hs-layout'>(</span></a><span class='hs-varid'>normalize</span> <a class=annot href="#"><span class=annottext>{v : (Deque.Deque a) | v == dq##a6hZ
+                       &amp;&amp; len (bk v) &gt; 0}</span><span class='hs-varid'>dq</span></a><span class='hs-layout'>)</span>
+<span class=hs-linenum> 53: </span>  <span class='hs-keyword'>where</span>
+<span class=hs-linenum> 54: </span>    <span class=hs-error><a class=annot href="#"><span class=annottext>forall a . :(Deque.Deque a) -&gt; a</span><span class='hs-varid'>extract</span></a></span><span class=hs-error> </span><span class=hs-error><span class='hs-layout'>(</span></span><span class=hs-error><span class='hs-conid'>Deque</span></span><span class=hs-error> </span><span class=hs-error><span class='hs-layout'>(</span></span><span class=hs-error><span class='hs-varid'>x</span></span><span class=hs-error><span class='hs-conop'>:</span></span><span class=hs-error><span class='hs-keyword'>_</span></span><span class=hs-error><span class='hs-layout'>)</span></span><span class=hs-error> </span><span class=hs-error><span class='hs-keyword'>_</span></span><span class=hs-error><span class='hs-layout'>)</span></span><span class=hs-error> </span><span class=hs-error><span class='hs-keyglyph'>=</span></span><span class=hs-error> </span><span class=hs-error><a class=annot href="#"><span class=annottext>{v : a | v == x##a6i1}</span><span class='hs-varid'>x</span></a></span>
+<span class=hs-linenum> 55: </span>    <span class=hs-error><span class='hs-varid'>extract</span></span><span class=hs-error> </span><span class=hs-error><span class='hs-layout'>(</span></span><span class=hs-error><span class='hs-conid'>Deque</span></span><span class=hs-error> </span><span class=hs-error><span class='hs-conid'>[]</span></span><span class=hs-error> </span><span class=hs-error><span class='hs-keyglyph'>[</span></span><span class=hs-error><span class='hs-varid'>x</span></span><span class=hs-error><span class='hs-keyglyph'>]</span></span><span class=hs-error><span class='hs-layout'>)</span></span><span class=hs-error>  </span><span class=hs-error><span class='hs-keyglyph'>=</span></span><span class=hs-error> </span><span class=hs-error><a class=annot href="#"><span class=annottext>{v : a | v == x##a6i2}</span><span class='hs-varid'>x</span></a></span>
+<span class=hs-linenum> 56: </span>    <span class='hs-comment'>-- extract _               = error "front: empty deque"  </span>
+<span class=hs-linenum> 57: </span>
+<span class=hs-linenum> 58: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>back</span> <span class='hs-keyglyph'>::</span> <span class='hs-varid'>dq</span><span class='hs-conop'>:</span><span class='hs-keyword'>{Deque a | len (bk dq) &gt; 0}</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-varid'>a</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 59: </span><span class='hs-definition'>back</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Deque</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-varid'>a</span>
+<span class=hs-linenum> 60: </span><a class=annot href="#"><span class=annottext>forall a . :{dq : (Deque.Deque a) | len (bk dq) &gt; 0} -&gt; a</span><span class='hs-definition'>back</span></a> <a class=annot href="#"><span class=annottext>{dq : (Deque.Deque a) | len (bk dq) &gt; 0}</span><span class='hs-varid'>dq</span></a> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{VV : forall a . :(Deque.Deque a) -&gt; a | VV == extract##a6i4}</span><span class='hs-varid'>extract</span></a> <a class=annot href="#"><span class=annottext>(Deque.Deque a)</span><span class='hs-layout'>(</span></a><span class='hs-varid'>normalize</span> <a class=annot href="#"><span class=annottext>{v : (Deque.Deque a) | v == dq##a6i3
+                       &amp;&amp; len (bk v) &gt; 0}</span><span class='hs-varid'>dq</span></a><span class='hs-layout'>)</span>
+<span class=hs-linenum> 61: </span>  <span class='hs-keyword'>where</span>
+<span class=hs-linenum> 62: </span>    <span class=hs-error><a class=annot href="#"><span class=annottext>forall a . :(Deque.Deque a) -&gt; a</span><span class='hs-varid'>extract</span></a></span><span class=hs-error> </span><span class=hs-error><span class='hs-layout'>(</span></span><span class=hs-error><span class='hs-conid'>Deque</span></span><span class=hs-error> </span><span class=hs-error><span class='hs-keyword'>_</span></span><span class=hs-error> </span><span class=hs-error><span class='hs-layout'>(</span></span><span class=hs-error><span class='hs-varid'>x</span></span><span class=hs-error><span class='hs-conop'>:</span></span><span class=hs-error><span class='hs-keyword'>_</span></span><span class=hs-error><span class='hs-layout'>)</span></span><span class=hs-error><span class='hs-layout'>)</span></span><span class=hs-error>   </span><span class=hs-error><span class='hs-keyglyph'>=</span></span><span class=hs-error> </span><span class=hs-error><a class=annot href="#"><span class=annottext>{v : a | v == x##a6i5}</span><span class='hs-varid'>x</span></a></span>
+<span class=hs-linenum> 63: </span>    <span class='hs-comment'>-- extract _                 = error "back: empty deque"</span>
+<span class=hs-linenum> 64: </span>
+<span class=hs-linenum> 65: </span>
+<span class=hs-linenum> 66: </span><span class='hs-comment'>-- | normalize a deque</span>
+<span class=hs-linenum> 67: </span><span class='hs-comment'>--{-@ reflect normalize @-}</span>
+<span class=hs-linenum> 68: </span><span class='hs-definition'>normalize</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Deque</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Deque</span> <span class='hs-varid'>a</span>
+<span class=hs-linenum> 69: </span><a class=annot href="#"><span class=annottext>forall a . :(Deque.Deque a) -&gt; (Deque.Deque a)</span><span class='hs-definition'>normalize</span></a> <span class='hs-layout'>(</span><span class='hs-conid'>Deque</span> <span class='hs-conid'>[]</span> <span class='hs-varid'>back</span><span class='hs-layout'>)</span> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{VV : forall a .
+      x1:[a] -&gt; x2:[a] -&gt; {v : (Deque.Deque a) | v == Deque x1 x2
+                                                 &amp;&amp; bk v == x2
+                                                 &amp;&amp; fr v == x1} | VV == Deque}</span><span class='hs-conid'>Deque</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == front'##a6i9
+           &amp;&amp; v == front'##a6lP
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>front'</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | len v == len back'##a6ia}</span><span class='hs-layout'>(</span></a><span class='hs-varid'>reverse</span> <a class=annot href="#"><span class=annottext>{v : [a] | v == back'##a6ia
+           &amp;&amp; v == back'##a6lQ
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>back'</span></a><span class='hs-layout'>)</span>
+<span class=hs-linenum> 70: </span>  <span class='hs-comment'>-- front is empty</span>
+<span class=hs-linenum> 71: </span>  <span class='hs-keyword'>where</span>
+<span class=hs-linenum> 72: </span>    <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v == len back##a6i6
+                              &amp;&amp; v &gt;= 0}</span><span class='hs-varid'>n</span></a> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v == len back##a6i6
+                              &amp;&amp; v &gt;= 0}</span><span class='hs-varid'>length</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == back##a6i6
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>back</span></a>
+<span class=hs-linenum> 73: </span>    <a class=annot href="#"><span class=annottext>GHC.Internal.Types.Int</span><span class='hs-varid'>k</span></a> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>GHC.Internal.Types.Int</span><span class='hs-varid'>div</span></a> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v == n##a6i7
+                              &amp;&amp; v == len back##a6i6
+                              &amp;&amp; v &gt;= 0}</span><span class='hs-varid'>n</span></a> <a class=annot href="#"><span class=annottext>GHC.Internal.Types.Int</span><span class='hs-num'>2</span></a>
+<span class=hs-linenum> 74: </span>    <span class='hs-layout'>(</span><a class=annot href="#"><span class=annottext>{v : [a] | v == front'##a6lP
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>front'</span></a><span class='hs-layout'>,</span> <a class=annot href="#"><span class=annottext>{v : [a] | v == back'##a6lQ
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>back'</span></a><span class='hs-layout'>)</span> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>([a], [a])</span><span class='hs-varid'>splitAt</span></a> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v == k##a6i8}</span><span class='hs-varid'>k</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | len v == len back##a6i6}</span><span class='hs-layout'>(</span></a><span class='hs-varid'>reverse</span> <a class=annot href="#"><span class=annottext>{v : [a] | v == back##a6i6
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>back</span></a><span class='hs-layout'>)</span>
+<span class=hs-linenum> 75: </span><span class='hs-definition'>normalize</span> <span class='hs-layout'>(</span><span class='hs-conid'>Deque</span> <span class='hs-varid'>front</span> <span class='hs-conid'>[]</span><span class='hs-layout'>)</span> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{VV : forall a .
+      x1:[a] -&gt; x2:[a] -&gt; {v : (Deque.Deque a) | v == Deque x1 x2
+                                                 &amp;&amp; bk v == x2
+                                                 &amp;&amp; fr v == x1} | VV == Deque}</span><span class='hs-conid'>Deque</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == front'##a6ie
+           &amp;&amp; v == front'##a6mB
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>front'</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | len v == len back'##a6if}</span><span class='hs-layout'>(</span></a><span class='hs-varid'>reverse</span> <a class=annot href="#"><span class=annottext>{v : [a] | v == back'##a6if
+           &amp;&amp; v == back'##a6mC
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>back'</span></a><span class='hs-layout'>)</span>
+<span class=hs-linenum> 76: </span>  <span class='hs-comment'>-- back is empty</span>
+<span class=hs-linenum> 77: </span>  <span class='hs-keyword'>where</span>
+<span class=hs-linenum> 78: </span>    <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v &gt;= 0}</span><span class='hs-varid'>n</span></a> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v &gt;= 0}</span><span class='hs-varid'>length</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | len v &gt;= 0}</span><span class='hs-varid'>front</span></a>
+<span class=hs-linenum> 79: </span>    <a class=annot href="#"><span class=annottext>GHC.Internal.Types.Int</span><span class='hs-varid'>k</span></a> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>GHC.Internal.Types.Int</span><span class='hs-varid'>div</span></a> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v == n##a6ic
+                              &amp;&amp; v &gt;= 0}</span><span class='hs-varid'>n</span></a> <a class=annot href="#"><span class=annottext>GHC.Internal.Types.Int</span><span class='hs-num'>2</span></a>
+<span class=hs-linenum> 80: </span>    <span class='hs-layout'>(</span><a class=annot href="#"><span class=annottext>{v : [a] | v == front'##a6mB
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>front'</span></a><span class='hs-layout'>,</span> <a class=annot href="#"><span class=annottext>{v : [a] | v == back'##a6mC
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>back'</span></a><span class='hs-layout'>)</span> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>([a], [a])</span><span class='hs-varid'>splitAt</span></a> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v == k##a6id}</span><span class='hs-varid'>k</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | len v &gt;= 0}</span><span class='hs-varid'>front</span></a>
+<span class=hs-linenum> 81: </span><span class='hs-comment'>-- all other cases: no change</span>
+<span class=hs-linenum> 82: </span><span class='hs-definition'>normalize</span> <span class='hs-varid'>dq</span> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>(Deque.Deque a)</span><span class='hs-varid'>dq</span></a>
+<span class=hs-linenum> 83: </span>
+<span class=hs-linenum> 84: </span>
+<span class=hs-linenum> 85: </span>
+<span class=hs-linenum> 86: </span><span class='hs-comment'>----------------------------------------------------</span>
+<span class=hs-linenum> 87: </span><span class='hs-comment'>-- Testing amortized complexity bounds</span>
+<span class=hs-linenum> 88: </span><span class='hs-comment'>----------------------------------------------------</span>
+<span class=hs-linenum> 89: </span>
+<span class=hs-linenum> 90: </span>  
+<span class=hs-linenum> 91: </span><span class='hs-comment'>-- cost functions</span>
+<span class=hs-linenum> 92: </span><span class='hs-comment'>{-{-@ reflect normalizeT @-}
+{-@ normalizeT :: Deque a -&gt; {x:Int | x &gt;= 1} @-}
+normalizeT :: Deque a -&gt; Int
+normalizeT (Deque []  back)  = 1 + length back
+normalizeT (Deque front [])  = 1 + length front
+normalizeT _                  = 1
+
+{-@ reflect popFrontT @-}
+{-@ popFrontT :: Deque a -&gt; {x:Int | x &gt;= 1} @-}
+popFrontT :: Deque a -&gt; Int
+popFrontT dq = 1 + normalizeT dq
+
+{-@ reflect popBackT @-}
+{-@ popBackT :: Deque a -&gt; {x:Int | x &gt;= 1} @-}
+popBackT :: Deque a -&gt; Int
+popBackT dq = 1 + normalizeT dq
+
+-- potential function
+{-@ reflect phi @-}
+{-@ phi :: Deque a -&gt; {x:Int | x &gt;= 0} @-}
+phi :: Deque a -&gt; Int
+phi (Deque fr bk) = abs (length fr - length bk)
+
+
+-------------------------------------------------------
+-- Proof checking
+-------------------------------------------------------
+
+{-@ automatic-instances popFrontP @-}
+{-@ popFrontP :: {dq:Deque a | not (isEmpty dq)} -&gt; {popFrontT dq + phi (popFront dq) - phi dq &lt;= 4} @-}
+popFrontP :: Deque a -&gt; Proof
+popFrontP dq = trivial
+
+{-@ automatic-instances popBackP @-}
+{-@ popBackP :: {dq:Deque a | not (isEmpty dq)} -&gt; {popBackT dq + phi (popBack dq) - phi dq &lt;= 3} @-}
+popBackP :: Deque a -&gt; Proof
+popBackP dq = trivial -}</span>
+<span class=hs-linenum>129: </span>
+<span class=hs-linenum>130: </span>
+<span class=hs-linenum>131: </span>
+</pre>
+</body>
+</html>

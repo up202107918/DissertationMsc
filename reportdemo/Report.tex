@@ -1,0 +1,52 @@
+\documentclass[10pt]{report}
+\usepackage[utf8]{inputenc}
+\usepackage{afterpage}
+\usepackage{hyperref}
+\usepackage{color}
+\usepackage{listings}
+\usepackage[a4paper, width=150mm, top=25mm, bottom=25mm, headheight=15pt, bindingoffset=6mm]{geometry}
+%\usepackage{natbib}
+\usepackage{verbatim}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{indentfirst}
+\usepackage{babel}
+\usepackage{setspace}
+\usepackage{wrapfig}
+\usepackage{titlesec}
+\usepackage{float}
+\usepackage[T1]{fontenc}
+\usepackage{tabularx}
+\usepackage{rotating}
+\usepackage{subcaption}
+\usepackage{enumerate}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{titlepic}
+\newcommand{\ts}{\textsuperscript}
+\usepackage{blindtext}
+\usepackage{multicol}
+\usepackage{varwidth}
+%\usepackage{minted}  
+
+\hypersetup{hidelinks}
+\titleformat{\chapter}[display]
+  {\normalfont\bfseries}{}{0pt}{\Huge}
+\geometry{a4paper, margin=1in}
+\title{Liquid Types for Verification}
+\author{Sérgio Cardoso\\ \texttt{up202107918@up.pt}}
+\titlepic{\includegraphics[width=0.6\textwidth]{images/FCUP.png}}
+\date{\today}
+
+\begin{document}
+\maketitle
+\include{Abstract}
+
+\tableofcontents
+\newpage
+\include{Intro}
+\include{Development}
+\include{Conclusion}
+\newpage
+\appendix 
+\include{Appendix}
+\end{document}

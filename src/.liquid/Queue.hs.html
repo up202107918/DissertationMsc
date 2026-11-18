@@ -1,0 +1,370 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+<title>Queue.hs</title>
+</head>
+<head>
+<link type='text/css' rel='stylesheet' href='syntax.css' />
+</head>
+
+<body>
+<hr>
+Put mouse over identifiers to see inferred types
+<pre><span class=hs-linenum>  1: </span><a class=annot href="#"><span class=annottext>GHC.Internal.Types.Module</span><span class='hs-comment'>{-# OPTIONS_GHC -fplugin=LiquidHaskell #-}</span></a>
+<span class=hs-linenum>  2: </span>
+<span class=hs-linenum>  3: </span><span class='hs-keyword'>{-@</span> <span class='hs-conid'>LIQUID</span> <span class='hs-str'>"--ple"</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum>  4: </span>
+<span class=hs-linenum>  5: </span><span class='hs-comment'>--</span>
+<span class=hs-linenum>  6: </span><span class='hs-comment'>-- Purely functional queues a.k.a. "Batched queues"</span>
+<span class=hs-linenum>  7: </span><span class='hs-comment'>-- O(1) amortized cost for all operations</span>
+<span class=hs-linenum>  8: </span><span class='hs-comment'>--</span>
+<span class=hs-linenum>  9: </span><span class='hs-keyword'>module</span> <span class='hs-conid'>Queue</span> <span class='hs-keyword'>where</span>
+<span class=hs-linenum> 10: </span>
+<span class=hs-linenum> 11: </span><span class='hs-keyword'>import</span> <span class='hs-conid'>Language.Haskell.Liquid.ProofCombinators</span>
+<span class=hs-linenum> 12: </span>
+<span class=hs-linenum> 13: </span><span class='hs-comment'>-- front is in direct order</span>
+<span class=hs-linenum> 14: </span><span class='hs-comment'>-- back is in reverse order</span>
+<span class=hs-linenum> 15: </span><span class='hs-comment'>-- invariant: front is empty =&gt; back is also empty</span>
+<span class=hs-linenum> 16: </span><span class='hs-comment'>-- use a newtype to allow custom instance declarations</span>
+<span class=hs-linenum> 17: </span>
+<span class=hs-linenum> 18: </span><span class='hs-comment'>-- Purely functional queues a.k.a. "Batched queues"</span>
+<span class=hs-linenum> 19: </span>
+<span class=hs-linenum> 20: </span><span class='hs-keyword'>{-@</span> <span class='hs-keyword'>data</span> <span class='hs-conid'>Queue</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>=</span> <span class='hs-conid'>Queue</span> <span class='hs-layout'>{</span> <span class='hs-varid'>fr</span> <span class='hs-keyglyph'>::</span> <span class='hs-keyglyph'>[</span><span class='hs-varid'>a</span><span class='hs-keyglyph'>]</span><span class='hs-layout'>,</span> <span class='hs-varid'>bk</span> <span class='hs-keyglyph'>::</span> <span class='hs-layout'>{</span><span class='hs-varid'>v</span><span class='hs-conop'>:</span><span class='hs-keyglyph'>[</span><span class='hs-varid'>a</span><span class='hs-keyglyph'>]</span> <span class='hs-keyglyph'>|</span> <span class='hs-layout'>(</span><span class='hs-varid'>len</span> <span class='hs-varid'>fr</span> <span class='hs-varop'>==</span> <span class='hs-num'>0</span><span class='hs-layout'>)</span> <span class='hs-keyglyph'>=&gt;</span> <span class='hs-layout'>(</span><span class='hs-varid'>len</span> <span class='hs-varid'>v</span> <span class='hs-varop'>==</span> <span class='hs-num'>0</span><span class='hs-layout'>)</span><span class='hs-layout'>}</span> <span class='hs-layout'>}</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 21: </span><span class='hs-keyword'>data</span> <span class='hs-conid'>Queue</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>=</span> <span class='hs-conid'>Queue</span> <span class='hs-keyglyph'>[</span><span class='hs-varid'>a</span><span class='hs-keyglyph'>]</span> <span class='hs-keyglyph'>[</span><span class='hs-varid'>a</span><span class='hs-keyglyph'>]</span> 
+<span class=hs-linenum> 22: </span>                <span class='hs-keyword'>deriving</span> <span class='hs-conid'>Show</span>
+<span class=hs-linenum> 23: </span>
+<span class=hs-linenum> 24: </span><span class='hs-definition'>empty</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Queue</span> <span class='hs-varid'>a</span>
+<span class=hs-linenum> 25: </span><a class=annot href="#"><span class=annottext>forall a . (Queue.Queue a)</span><span class='hs-definition'>empty</span></a> <span class='hs-keyglyph'>=</span> <span class='hs-conid'>Queue</span> <a class=annot href="#"><span class=annottext>{VV : forall a &lt; :: a a -&gt; Bool&gt;.
+      {v : [a]&lt;\x4 _ -&gt; a&lt;p x4&gt;&gt; | v == []
+                                   &amp;&amp; len v == 0} | VV == []}</span><span class='hs-conid'>[]</span></a> <a class=annot href="#"><span class=annottext>{VV : forall a &lt; :: a a -&gt; Bool&gt;.
+      {v : [a]&lt;\x4 _ -&gt; a&lt;p x4&gt;&gt; | v == []
+                                   &amp;&amp; len v == 0} | VV == []}</span><span class='hs-conid'>[]</span></a>
+<span class=hs-linenum> 26: </span>
+<span class=hs-linenum> 27: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>reflect</span> <span class='hs-varid'>isEmpty</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 28: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>isEmpty</span> <span class='hs-keyglyph'>::</span> <span class='hs-varid'>q</span><span class='hs-conop'>:</span><span class='hs-conid'>Queue</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-keyword'>{v:</span><span class='hs-conid'>Bool</span> <span class='hs-keyword'>| v &lt;=&gt; (len (fr q) == 0)}</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 29: </span><span class='hs-definition'>isEmpty</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Queue</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Bool</span>
+<span class=hs-linenum> 30: </span><a class=annot href="#"><span class=annottext>forall a .
+x1:(Queue.Queue a) -&gt; {v : GHC.Internal.Types.Bool | v &lt;=&gt; len (fr x1) == 0}</span><span class='hs-definition'>isEmpty</span></a> <span class='hs-layout'>(</span><span class='hs-conid'>Queue</span> <span class='hs-varid'>fr</span> <span class='hs-varid'>bk</span><span class='hs-layout'>)</span> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{v : (GHC.Internal.Data.Foldable.Foldable []) | v == $fFoldableList}</span><span class='hs-varid'>null</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == fr##aM6
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>fr</span></a>
+<span class=hs-linenum> 31: </span>
+<span class=hs-linenum> 32: </span><span class='hs-comment'>-- add to the back </span>
+<span class=hs-linenum> 33: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>reflect</span> <span class='hs-varid'>enqueue</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 34: </span><span class='hs-definition'>enqueue</span> <span class='hs-keyglyph'>::</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Queue</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Queue</span> <span class='hs-varid'>a</span>
+<span class=hs-linenum> 35: </span><a class=annot href="#"><span class=annottext>forall a .
+x1:a -&gt; x2:(Queue.Queue a) -&gt; {VV : (Queue.Queue a) | VV == enqueue x1 x2
+                                                      &amp;&amp; VV == makeQueue (fr x2) (: x1 (bk x2))}</span><span class='hs-definition'>enqueue</span></a> <a class=annot href="#"><span class=annottext>a</span><span class='hs-varid'>x</span></a> <span class='hs-layout'>(</span><span class='hs-conid'>Queue</span> <span class='hs-varid'>fr</span> <span class='hs-varid'>bk</span><span class='hs-layout'>)</span> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{VV : forall a .
+      x1:[a] -&gt; x2:[a] -&gt; {v : (Queue.Queue a) | v == makeQueue x1 x2} | VV == makeQueue}</span><span class='hs-varid'>makeQueue</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == fr##aWX
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>fr</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == : x##aWW bk##aWY
+           &amp;&amp; head v == x##aWW
+           &amp;&amp; len v == 1 + len bk##aWY
+           &amp;&amp; lqdc##$select##GHC.Internal.Types.:##1 v == x##aWW
+           &amp;&amp; lqdc##$select##GHC.Internal.Types.:##2 v == bk##aWY
+           &amp;&amp; tail v == bk##aWY}</span><span class='hs-layout'>(</span></a><a class=annot href="#"><span class=annottext>{v : a | v == x##aWW}</span><span class='hs-varid'>x</span></a><span class='hs-conop'>:</span><a class=annot href="#"><span class=annottext>{v : [a] | (len fr##aWX == 0 =&gt; len v == 0)
+           &amp;&amp; v == bk##aWY
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a><span class='hs-layout'>)</span>
+<span class=hs-linenum> 36: </span>
+<span class=hs-linenum> 37: </span><span class='hs-comment'>-- front element</span>
+<span class=hs-linenum> 38: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>reflect</span> <span class='hs-varid'>front</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 39: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>front</span> <span class='hs-keyglyph'>::</span> <span class='hs-varid'>q</span><span class='hs-conop'>:</span><span class='hs-keyword'>{Queue a | len (fr q) &gt; 0}</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-varid'>a</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 40: </span><span class='hs-definition'>front</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Queue</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-varid'>a</span>
+<span class=hs-linenum> 41: </span><a class=annot href="#"><span class=annottext>forall a . :{q : (Queue.Queue a) | len (fr q) &gt; 0} -&gt; a</span><span class='hs-definition'>front</span></a> <span class='hs-layout'>(</span><span class='hs-conid'>Queue</span> <span class='hs-layout'>(</span><span class='hs-varid'>x</span><span class='hs-conop'>:</span><span class='hs-varid'>fr</span><span class='hs-layout'>)</span> <span class='hs-varid'>bk</span><span class='hs-layout'>)</span> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{v : a | v == x##aWZ}</span><span class='hs-varid'>x</span></a>
+<span class=hs-linenum> 42: </span><span class='hs-comment'>--front _      = error "empty queue"</span>
+<span class=hs-linenum> 43: </span>
+<span class=hs-linenum> 44: </span><span class='hs-comment'>-- remove the front</span>
+<span class=hs-linenum> 45: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>reflect</span> <span class='hs-varid'>dequeue</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 46: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>dequeue</span> <span class='hs-keyglyph'>::</span> <span class='hs-varid'>q</span><span class='hs-conop'>:</span><span class='hs-keyword'>{Queue a | len (fr q) &gt; 0}</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Queue</span> <span class='hs-varid'>a</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 47: </span><span class='hs-definition'>dequeue</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Queue</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Queue</span> <span class='hs-varid'>a</span>
+<span class=hs-linenum> 48: </span><a class=annot href="#"><span class=annottext>forall a .
+:{q : (Queue.Queue a) | len (fr q) &gt; 0} -&gt; (Queue.Queue a)</span><span class='hs-definition'>dequeue</span></a> <span class='hs-layout'>(</span><span class='hs-conid'>Queue</span> <span class='hs-layout'>(</span><span class='hs-varid'>x</span><span class='hs-conop'>:</span><span class='hs-varid'>fr</span><span class='hs-layout'>)</span> <span class='hs-varid'>bk</span><span class='hs-layout'>)</span> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{VV : forall a .
+      x1:[a] -&gt; x2:[a] -&gt; {v : (Queue.Queue a) | v == makeQueue x1 x2} | VV == makeQueue}</span><span class='hs-varid'>makeQueue</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == fr##aX3
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>fr</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == bk##aX4
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a> 
+<span class=hs-linenum> 49: </span><span class='hs-comment'>--dequeue _                 = error "empty queue"</span>
+<span class=hs-linenum> 50: </span>
+<span class=hs-linenum> 51: </span><span class='hs-comment'>-- smart constructor</span>
+<span class=hs-linenum> 52: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>reflect</span> <span class='hs-varid'>makeQueue</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 53: </span><span class='hs-definition'>makeQueue</span> <span class='hs-keyglyph'>::</span> <span class='hs-keyglyph'>[</span><span class='hs-varid'>a</span><span class='hs-keyglyph'>]</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-keyglyph'>[</span><span class='hs-varid'>a</span><span class='hs-keyglyph'>]</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Queue</span> <span class='hs-varid'>a</span>
+<span class=hs-linenum> 54: </span><a class=annot href="#"><span class=annottext>forall a .
+x1:[a] -&gt; x2:[a] -&gt; {VV : (Queue.Queue a) | VV == makeQueue x1 x2}</span><span class='hs-definition'>makeQueue</span></a> <span class='hs-conid'>[]</span> <a class=annot href="#"><span class=annottext>[a]</span><span class='hs-varid'>bk</span></a> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{v : [a] | v == []
+           &amp;&amp; len v == 0}</span><span class='hs-conid'>Queue</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == reverse bk##aX5
+           &amp;&amp; len v == len bk##aX5}</span><span class='hs-layout'>(</span></a><span class='hs-varid'>reverse</span> <a class=annot href="#"><span class=annottext>{v : [a] | v == bk##aX5
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a><span class='hs-layout'>)</span> <a class=annot href="#"><span class=annottext>{VV : forall a &lt; :: a a -&gt; Bool&gt;.
+      {v : [a]&lt;\x4 _ -&gt; a&lt;p x4&gt;&gt; | v == []
+                                   &amp;&amp; len v == 0} | VV == []}</span><span class='hs-conid'>[]</span></a>
+<span class=hs-linenum> 55: </span><span class='hs-definition'>makeQueue</span> <span class='hs-varid'>fr</span> <span class='hs-varid'>bk</span> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{VV : forall a .
+      x1:[a] -&gt; x2:{v : [a] | len x1 == 0 =&gt; len v == 0} -&gt; {v : (Queue.Queue a) | v == Queue x1 x2
+                                                                                   &amp;&amp; bk v == x2
+                                                                                   &amp;&amp; fr v == x1} | VV == Queue}</span><span class='hs-conid'>Queue</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | len v &gt;= 0}</span><span class='hs-varid'>fr</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == bk##aX5
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a>
+<span class=hs-linenum> 56: </span>
+<span class=hs-linenum> 57: </span><span class='hs-comment'>-------------------------------------------------------</span>
+<span class=hs-linenum> 58: </span><span class='hs-comment'>-- Testing amortized bounds</span>
+<span class=hs-linenum> 59: </span><span class='hs-comment'>-------------------------------------------------------</span>
+<span class=hs-linenum> 60: </span>    
+<span class=hs-linenum> 61: </span><span class='hs-comment'>-- actual cost functions</span>
+<span class=hs-linenum> 62: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>reflect</span> <span class='hs-varid'>enqueueT</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 63: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>enqueueT</span> <span class='hs-keyglyph'>::</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Queue</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-keyword'>{x:</span><span class='hs-conid'>Int</span> <span class='hs-keyword'>| x &gt;= 1}</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 64: </span><span class='hs-definition'>enqueueT</span> <span class='hs-keyglyph'>::</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Queue</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span>
+<span class=hs-linenum> 65: </span><a class=annot href="#"><span class=annottext>forall a .
+:a -&gt; :(Queue.Queue a) -&gt; {v : GHC.Internal.Types.Int | v &gt;= 1}</span><span class='hs-definition'>enqueueT</span></a> <a class=annot href="#"><span class=annottext>a</span><span class='hs-varid'>x</span></a> <span class='hs-layout'>(</span><span class='hs-conid'>Queue</span> <span class='hs-varid'>fr</span> <span class='hs-varid'>bk</span><span class='hs-layout'>)</span> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{VV : forall a .
+      x1:[a] -&gt; x2:[a] -&gt; {v : GHC.Internal.Types.Int | v == makeQueueT x1 x2
+                                                        &amp;&amp; v &gt;= 1} | VV == makeQueueT}</span><span class='hs-varid'>makeQueueT</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == fr##aYx
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>fr</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == : x##aYw bk##aYy
+           &amp;&amp; head v == x##aYw
+           &amp;&amp; len v == 1 + len bk##aYy
+           &amp;&amp; lqdc##$select##GHC.Internal.Types.:##1 v == x##aYw
+           &amp;&amp; lqdc##$select##GHC.Internal.Types.:##2 v == bk##aYy
+           &amp;&amp; tail v == bk##aYy}</span><span class='hs-layout'>(</span></a><a class=annot href="#"><span class=annottext>{v : a | v == x##aYw}</span><span class='hs-varid'>x</span></a><span class='hs-conop'>:</span><a class=annot href="#"><span class=annottext>{v : [a] | (len fr##aYx == 0 =&gt; len v == 0)
+           &amp;&amp; v == bk##aYy
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a><span class='hs-layout'>)</span>
+<span class=hs-linenum> 66: </span>
+<span class=hs-linenum> 67: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>reflect</span> <span class='hs-varid'>dequeueT</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 68: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>dequeueT</span> <span class='hs-keyglyph'>::</span> <span class='hs-varid'>q</span><span class='hs-conop'>:</span><span class='hs-keyword'>{Queue a | len (fr q) &gt; 0}</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-keyword'>{x:</span><span class='hs-conid'>Int</span> <span class='hs-keyword'>| x &gt;= 1}</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 69: </span><span class='hs-definition'>dequeueT</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Queue</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span>
+<span class=hs-linenum> 70: </span><a class=annot href="#"><span class=annottext>forall a .
+:{q : (Queue.Queue a) | len (fr q) &gt; 0} -&gt; {v : GHC.Internal.Types.Int | v &gt;= 1}</span><span class='hs-definition'>dequeueT</span></a> <span class='hs-layout'>(</span><span class='hs-conid'>Queue</span> <span class='hs-layout'>(</span><span class='hs-varid'>x</span><span class='hs-conop'>:</span><span class='hs-varid'>fr</span><span class='hs-layout'>)</span> <span class='hs-varid'>bk</span><span class='hs-layout'>)</span> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{VV : forall a .
+      x1:[a] -&gt; x2:[a] -&gt; {v : GHC.Internal.Types.Int | v == makeQueueT x1 x2
+                                                        &amp;&amp; v &gt;= 1} | VV == makeQueueT}</span><span class='hs-varid'>makeQueueT</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == fr##aYA
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>fr</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == bk##aYB
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a>   
+<span class=hs-linenum> 71: </span>
+<span class=hs-linenum> 72: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>reflect</span> <span class='hs-varid'>makeQueueT</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 73: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>makeQueueT</span> <span class='hs-keyglyph'>::</span> <span class='hs-varid'>fr</span><span class='hs-conop'>:</span><span class='hs-keyglyph'>[</span><span class='hs-varid'>a</span><span class='hs-keyglyph'>]</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-varid'>bk</span><span class='hs-conop'>:</span><span class='hs-keyglyph'>[</span><span class='hs-varid'>a</span><span class='hs-keyglyph'>]</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-keyword'>{x:</span><span class='hs-conid'>Int</span> <span class='hs-keyword'>| x &gt;= 1}</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 74: </span><span class='hs-definition'>makeQueueT</span> <span class='hs-keyglyph'>::</span> <span class='hs-keyglyph'>[</span><span class='hs-varid'>a</span><span class='hs-keyglyph'>]</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-keyglyph'>[</span><span class='hs-varid'>a</span><span class='hs-keyglyph'>]</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span>
+<span class=hs-linenum> 75: </span><a class=annot href="#"><span class=annottext>forall a . :[a] -&gt; :[a] -&gt; {v : GHC.Internal.Types.Int | v &gt;= 1}</span><span class='hs-definition'>makeQueueT</span></a> <span class='hs-conid'>[]</span> <a class=annot href="#"><span class=annottext>[a]</span><span class='hs-varid'>bk</span></a> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>GHC.Internal.Types.Int</span><span class='hs-num'>1</span></a> <span class='hs-varop'>+</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v == len bk##aYC
+                              &amp;&amp; v == length bk##aYC
+                              &amp;&amp; v &gt;= 0}</span><span class='hs-varid'>length</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == bk##aYC
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a>
+<span class=hs-linenum> 76: </span><span class='hs-definition'>makeQueueT</span> <span class='hs-varid'>fr</span> <span class='hs-varid'>bk</span> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Prim.Int# | v == 1}</span><span class='hs-num'>1</span></a>
+<span class=hs-linenum> 77: </span>
+<span class=hs-linenum> 78: </span><span class='hs-comment'>-- potential</span>
+<span class=hs-linenum> 79: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>reflect</span> <span class='hs-varid'>phi</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 80: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>phi</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Queue</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Nat</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 81: </span><span class='hs-definition'>phi</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Queue</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span>
+<span class=hs-linenum> 82: </span><a class=annot href="#"><span class=annottext>forall a .
+:(Queue.Queue a) -&gt; {VV##0 : GHC.Internal.Types.Int | VV##0 &gt;= 0}</span><span class='hs-definition'>phi</span></a> <span class='hs-layout'>(</span><span class='hs-conid'>Queue</span> <span class='hs-varid'>fr</span> <span class='hs-varid'>bk</span><span class='hs-layout'>)</span> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{v : (GHC.Internal.Data.Foldable.Foldable []) | v == $fFoldableList}</span><span class='hs-varid'>length</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | (len fr##a11k == 0 =&gt; len v == 0)
+           &amp;&amp; v == bk##a11l
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a> 
+<span class=hs-linenum> 83: </span>
+<span class=hs-linenum> 84: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>ple</span> <span class='hs-varid'>enqueueP</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 85: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>enqueueP</span> <span class='hs-keyglyph'>::</span> <span class='hs-varid'>x</span><span class='hs-conop'>:</span><span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-varid'>q</span><span class='hs-conop'>:</span><span class='hs-conid'>Queue</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-keyword'>{enqueueT x q + phi (enqueue x q) - phi q &lt;= 2}</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 86: </span><span class='hs-definition'>enqueueP</span> <span class='hs-keyglyph'>::</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Queue</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Proof</span>
+<span class=hs-linenum> 87: </span><a class=annot href="#"><span class=annottext>forall a .
+x1:a -&gt; x2:(Queue.Queue a) -&gt; {VV : () | (enqueueT x1 x2 + phi (enqueue x1 x2)) - phi x2 &lt;= 2}</span><span class='hs-definition'>enqueueP</span></a> <a class=annot href="#"><span class=annottext>a</span><span class='hs-varid'>x</span></a> <span class='hs-layout'>(</span><span class='hs-conid'>Queue</span> <span class='hs-conid'>[]</span> <span class='hs-varid'>bk</span><span class='hs-layout'>)</span>  
+<span class=hs-linenum> 88: </span>    <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v &gt;= 1}</span><span class='hs-varid'>enqueueT</span></a> <a class=annot href="#"><span class=annottext>{v : a | v == x##a11m}</span><span class='hs-varid'>x</span></a> <a class=annot href="#"><span class=annottext>{v : (Queue.Queue a) | bk v == bk##a11n}</span><span class='hs-layout'>(</span></a><span class='hs-conid'>Queue</span> <a class=annot href="#"><span class=annottext>{VV : forall a &lt; :: a a -&gt; Bool&gt;.
+      {v : [a]&lt;\x4 _ -&gt; a&lt;p x4&gt;&gt; | v == []
+                                   &amp;&amp; len v == 0} | VV == []}</span><span class='hs-conid'>[]</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11n
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a><span class='hs-layout'>)</span> <span class='hs-varop'>+</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v &gt;= 0}</span><span class='hs-varid'>phi</span></a> <a class=annot href="#"><span class=annottext>(Queue.Queue a)</span><span class='hs-layout'>(</span></a><span class='hs-varid'>enqueue</span> <a class=annot href="#"><span class=annottext>{v : a | v == x##a11m}</span><span class='hs-varid'>x</span></a> <a class=annot href="#"><span class=annottext>{v : (Queue.Queue a) | bk v == bk##a11n}</span><span class='hs-layout'>(</span></a><span class='hs-conid'>Queue</span> <a class=annot href="#"><span class=annottext>{VV : forall a &lt; :: a a -&gt; Bool&gt;.
+      {v : [a]&lt;\x4 _ -&gt; a&lt;p x4&gt;&gt; | v == []
+                                   &amp;&amp; len v == 0} | VV == []}</span><span class='hs-conid'>[]</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11n
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a><span class='hs-layout'>)</span><span class='hs-layout'>)</span> <span class='hs-comment'>-</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v &gt;= 0}</span><span class='hs-varid'>phi</span></a> <a class=annot href="#"><span class=annottext>{v : (Queue.Queue a) | bk v == bk##a11n}</span><span class='hs-layout'>(</span></a><span class='hs-conid'>Queue</span> <a class=annot href="#"><span class=annottext>{VV : forall a &lt; :: a a -&gt; Bool&gt;.
+      {v : [a]&lt;\x4 _ -&gt; a&lt;p x4&gt;&gt; | v == []
+                                   &amp;&amp; len v == 0} | VV == []}</span><span class='hs-conid'>[]</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11n
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a><span class='hs-layout'>)</span>
+<span class=hs-linenum> 89: </span>    <span class='hs-comment'>-- using the definitions of enqueueT and enqueue</span>
+<span class=hs-linenum> 90: </span>    <span class='hs-varop'>===</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v &gt;= 1}</span><span class='hs-varid'>makeQueueT</span></a> <a class=annot href="#"><span class=annottext>{VV : forall a &lt; :: a a -&gt; Bool&gt;.
+      {v : [a]&lt;\x4 _ -&gt; a&lt;p x4&gt;&gt; | v == []
+                                   &amp;&amp; len v == 0} | VV == []}</span><span class='hs-conid'>[]</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == : x##a11m bk##a11n
+           &amp;&amp; head v == x##a11m
+           &amp;&amp; len v == 1 + len bk##a11n
+           &amp;&amp; lqdc##$select##GHC.Internal.Types.:##1 v == x##a11m
+           &amp;&amp; lqdc##$select##GHC.Internal.Types.:##2 v == bk##a11n
+           &amp;&amp; tail v == bk##a11n}</span><span class='hs-layout'>(</span></a><a class=annot href="#"><span class=annottext>{v : a | v == x##a11m}</span><span class='hs-varid'>x</span></a><span class='hs-conop'>:</span><a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11n
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a><span class='hs-layout'>)</span> <span class='hs-varop'>+</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v &gt;= 0}</span><span class='hs-varid'>phi</span></a> <a class=annot href="#"><span class=annottext>(Queue.Queue a)</span><span class='hs-layout'>(</span></a><span class='hs-varid'>makeQueue</span> <a class=annot href="#"><span class=annottext>{VV : forall a &lt; :: a a -&gt; Bool&gt;.
+      {v : [a]&lt;\x4 _ -&gt; a&lt;p x4&gt;&gt; | v == []
+                                   &amp;&amp; len v == 0} | VV == []}</span><span class='hs-conid'>[]</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == : x##a11m bk##a11n
+           &amp;&amp; head v == x##a11m
+           &amp;&amp; len v == 1 + len bk##a11n
+           &amp;&amp; lqdc##$select##GHC.Internal.Types.:##1 v == x##a11m
+           &amp;&amp; lqdc##$select##GHC.Internal.Types.:##2 v == bk##a11n
+           &amp;&amp; tail v == bk##a11n}</span><span class='hs-layout'>(</span></a><a class=annot href="#"><span class=annottext>{v : a | v == x##a11m}</span><span class='hs-varid'>x</span></a><span class='hs-conop'>:</span><a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11n
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a><span class='hs-layout'>)</span><span class='hs-layout'>)</span> <span class='hs-comment'>-</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v &gt;= 0}</span><span class='hs-varid'>phi</span></a> <a class=annot href="#"><span class=annottext>{v : (Queue.Queue a) | bk v == bk##a11n}</span><span class='hs-layout'>(</span></a><span class='hs-conid'>Queue</span> <a class=annot href="#"><span class=annottext>{VV : forall a &lt; :: a a -&gt; Bool&gt;.
+      {v : [a]&lt;\x4 _ -&gt; a&lt;p x4&gt;&gt; | v == []
+                                   &amp;&amp; len v == 0} | VV == []}</span><span class='hs-conid'>[]</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11n
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a><span class='hs-layout'>)</span>
+<span class=hs-linenum> 91: </span>    <span class='hs-comment'>-- using the definiton of makeQueueT and makeQueue</span>
+<span class=hs-linenum> 92: </span>    <span class='hs-varop'>===</span> <a class=annot href="#"><span class=annottext>GHC.Internal.Types.Int</span><span class='hs-num'>1</span></a> <span class='hs-varop'>+</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v &gt;= 0}</span><span class='hs-varid'>length</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == : x##a11m bk##a11n
+           &amp;&amp; head v == x##a11m
+           &amp;&amp; len v == 1 + len bk##a11n
+           &amp;&amp; lqdc##$select##GHC.Internal.Types.:##1 v == x##a11m
+           &amp;&amp; lqdc##$select##GHC.Internal.Types.:##2 v == bk##a11n
+           &amp;&amp; tail v == bk##a11n}</span><span class='hs-layout'>(</span></a><a class=annot href="#"><span class=annottext>{v : a | v == x##a11m}</span><span class='hs-varid'>x</span></a><span class='hs-conop'>:</span><a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11n
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a><span class='hs-layout'>)</span> <span class='hs-varop'>+</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v &gt;= 0}</span><span class='hs-varid'>phi</span></a> <a class=annot href="#"><span class=annottext>(Queue.Queue a)</span><span class='hs-layout'>(</span></a><span class='hs-conid'>Queue</span> <a class=annot href="#"><span class=annottext>[a]</span><span class='hs-layout'>(</span></a><span class='hs-varid'>reverse</span> <a class=annot href="#"><span class=annottext>{v : [a] | v == : x##a11m bk##a11n
+           &amp;&amp; head v == x##a11m
+           &amp;&amp; len v == 1 + len bk##a11n
+           &amp;&amp; lqdc##$select##GHC.Internal.Types.:##1 v == x##a11m
+           &amp;&amp; lqdc##$select##GHC.Internal.Types.:##2 v == bk##a11n
+           &amp;&amp; tail v == bk##a11n}</span><span class='hs-layout'>(</span></a><a class=annot href="#"><span class=annottext>{v : a | v == x##a11m}</span><span class='hs-varid'>x</span></a><span class='hs-conop'>:</span><a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11n
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a><span class='hs-layout'>)</span><span class='hs-layout'>)</span> <a class=annot href="#"><span class=annottext>{VV : forall a &lt; :: a a -&gt; Bool&gt;.
+      {v : [a]&lt;\x4 _ -&gt; a&lt;p x4&gt;&gt; | v == []
+                                   &amp;&amp; len v == 0} | VV == []}</span><span class='hs-conid'>[]</span></a><span class='hs-layout'>)</span> <span class='hs-comment'>-</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v &gt;= 0}</span><span class='hs-varid'>phi</span></a> <a class=annot href="#"><span class=annottext>{v : (Queue.Queue a) | bk v == bk##a11n}</span><span class='hs-layout'>(</span></a><span class='hs-conid'>Queue</span> <a class=annot href="#"><span class=annottext>{VV : forall a &lt; :: a a -&gt; Bool&gt;.
+      {v : [a]&lt;\x4 _ -&gt; a&lt;p x4&gt;&gt; | v == []
+                                   &amp;&amp; len v == 0} | VV == []}</span><span class='hs-conid'>[]</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11n
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a><span class='hs-layout'>)</span>
+<span class=hs-linenum> 93: </span>    <span class='hs-comment'>-- using the definition of phi (Queue fr bk)</span>
+<span class=hs-linenum> 94: </span>    <span class='hs-varop'>===</span> <a class=annot href="#"><span class=annottext>GHC.Internal.Types.Int</span><span class='hs-num'>1</span></a> <span class='hs-varop'>+</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v &gt;= 0}</span><span class='hs-varid'>length</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == : x##a11m bk##a11n
+           &amp;&amp; head v == x##a11m
+           &amp;&amp; len v == 1 + len bk##a11n
+           &amp;&amp; lqdc##$select##GHC.Internal.Types.:##1 v == x##a11m
+           &amp;&amp; lqdc##$select##GHC.Internal.Types.:##2 v == bk##a11n
+           &amp;&amp; tail v == bk##a11n}</span><span class='hs-layout'>(</span></a><a class=annot href="#"><span class=annottext>{v : a | v == x##a11m}</span><span class='hs-varid'>x</span></a><span class='hs-conop'>:</span><a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11n
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a><span class='hs-layout'>)</span> <span class='hs-varop'>+</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v &gt;= 0}</span><span class='hs-varid'>length</span></a> <a class=annot href="#"><span class=annottext>{VV : forall a &lt; :: a a -&gt; Bool&gt;.
+      {v : [a]&lt;\x4 _ -&gt; a&lt;p x4&gt;&gt; | v == []
+                                   &amp;&amp; len v == 0} | VV == []}</span><span class='hs-conid'>[]</span></a> <span class='hs-comment'>-</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v == len bk##a11n
+                              &amp;&amp; v == length bk##a11n
+                              &amp;&amp; v &gt;= 0}</span><span class='hs-varid'>length</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11n
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a>
+<span class=hs-linenum> 95: </span>    <span class='hs-comment'>-- length [] = 0</span>
+<span class=hs-linenum> 96: </span>    <span class='hs-varop'>===</span> <a class=annot href="#"><span class=annottext>GHC.Internal.Types.Int</span><span class='hs-num'>1</span></a> <span class='hs-varop'>+</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v &gt;= 0}</span><span class='hs-varid'>length</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == : x##a11m bk##a11n
+           &amp;&amp; head v == x##a11m
+           &amp;&amp; len v == 1 + len bk##a11n
+           &amp;&amp; lqdc##$select##GHC.Internal.Types.:##1 v == x##a11m
+           &amp;&amp; lqdc##$select##GHC.Internal.Types.:##2 v == bk##a11n
+           &amp;&amp; tail v == bk##a11n}</span><span class='hs-layout'>(</span></a><a class=annot href="#"><span class=annottext>{v : a | v == x##a11m}</span><span class='hs-varid'>x</span></a><span class='hs-conop'>:</span><a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11n
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a><span class='hs-layout'>)</span> <span class='hs-comment'>-</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v == len bk##a11n
+                              &amp;&amp; v == length bk##a11n
+                              &amp;&amp; v &gt;= 0}</span><span class='hs-varid'>length</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11n
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a>
+<span class=hs-linenum> 97: </span>    <span class='hs-comment'>-- length (x:bk) = 1 + length bk</span>
+<span class=hs-linenum> 98: </span>    <span class='hs-varop'>===</span> <a class=annot href="#"><span class=annottext>GHC.Internal.Types.Int</span><span class='hs-num'>1</span></a> <span class='hs-varop'>+</span> <a class=annot href="#"><span class=annottext>GHC.Internal.Types.Int</span><span class='hs-num'>1</span></a> <span class='hs-varop'>+</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v == len bk##a11n
+                              &amp;&amp; v == length bk##a11n
+                              &amp;&amp; v &gt;= 0}</span><span class='hs-varid'>length</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11n
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a> <span class='hs-comment'>-</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v == len bk##a11n
+                              &amp;&amp; v == length bk##a11n
+                              &amp;&amp; v &gt;= 0}</span><span class='hs-varid'>length</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11n
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a>
+<span class=hs-linenum> 99: </span>    <span class='hs-varop'>===</span> <a class=annot href="#"><span class=annottext>GHC.Internal.Types.Int</span><span class='hs-num'>2</span></a>   <span class='hs-comment'>-- &lt;= 2</span>
+<span class=hs-linenum>100: </span>    <span class='hs-varop'>***</span> <a class=annot href="#"><span class=annottext>{v : Language.Haskell.Liquid.ProofCombinators.QED | not (isAdmit v)
+                                                    &amp;&amp; v == QED}</span><span class='hs-conid'>QED</span></a>
+<span class=hs-linenum>101: </span><span class='hs-definition'>enqueueP</span> <span class='hs-varid'>x</span> <span class='hs-layout'>(</span><span class='hs-conid'>Queue</span> <span class='hs-varid'>fr</span> <span class='hs-varid'>bk</span><span class='hs-layout'>)</span>
+<span class=hs-linenum>102: </span>    <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v &gt;= 1}</span><span class='hs-varid'>enqueueT</span></a> <a class=annot href="#"><span class=annottext>{v : a | v == x##a11m}</span><span class='hs-varid'>x</span></a> <a class=annot href="#"><span class=annottext>{v : (Queue.Queue a) | bk v == bk##a11n}</span><span class='hs-layout'>(</span></a><span class='hs-conid'>Queue</span> <a class=annot href="#"><span class=annottext>{v : [a] | len v &gt;= 0}</span><span class='hs-varid'>fr</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11n
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a><span class='hs-layout'>)</span> <span class='hs-varop'>+</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v &gt;= 0}</span><span class='hs-varid'>phi</span></a> <a class=annot href="#"><span class=annottext>(Queue.Queue a)</span><span class='hs-layout'>(</span></a><span class='hs-varid'>enqueue</span> <a class=annot href="#"><span class=annottext>{v : a | v == x##a11m}</span><span class='hs-varid'>x</span></a> <a class=annot href="#"><span class=annottext>{v : (Queue.Queue a) | bk v == bk##a11n}</span><span class='hs-layout'>(</span></a><span class='hs-conid'>Queue</span> <a class=annot href="#"><span class=annottext>{v : [a] | len v &gt;= 0}</span><span class='hs-varid'>fr</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11n
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a><span class='hs-layout'>)</span><span class='hs-layout'>)</span> <span class='hs-comment'>-</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v &gt;= 0}</span><span class='hs-varid'>phi</span></a> <a class=annot href="#"><span class=annottext>{v : (Queue.Queue a) | bk v == bk##a11n}</span><span class='hs-layout'>(</span></a><span class='hs-conid'>Queue</span> <a class=annot href="#"><span class=annottext>{v : [a] | len v &gt;= 0}</span><span class='hs-varid'>fr</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11n
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a><span class='hs-layout'>)</span>
+<span class=hs-linenum>103: </span>    <span class='hs-comment'>-- using the definitions of enqueueT and enqueue </span>
+<span class=hs-linenum>104: </span>    <span class='hs-varop'>===</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v &gt;= 1}</span><span class='hs-varid'>makeQueueT</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | len v &gt;= 0}</span><span class='hs-varid'>fr</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == : x##a11m bk##a11n
+           &amp;&amp; head v == x##a11m
+           &amp;&amp; len v == 1 + len bk##a11n
+           &amp;&amp; lqdc##$select##GHC.Internal.Types.:##1 v == x##a11m
+           &amp;&amp; lqdc##$select##GHC.Internal.Types.:##2 v == bk##a11n
+           &amp;&amp; tail v == bk##a11n}</span><span class='hs-layout'>(</span></a><a class=annot href="#"><span class=annottext>{v : a | v == x##a11m}</span><span class='hs-varid'>x</span></a><span class='hs-conop'>:</span><a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11n
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a><span class='hs-layout'>)</span> <span class='hs-varop'>+</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v &gt;= 0}</span><span class='hs-varid'>phi</span></a> <a class=annot href="#"><span class=annottext>(Queue.Queue a)</span><span class='hs-layout'>(</span></a><span class='hs-varid'>makeQueue</span> <a class=annot href="#"><span class=annottext>{v : [a] | len v &gt;= 0}</span><span class='hs-varid'>fr</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == : x##a11m bk##a11n
+           &amp;&amp; head v == x##a11m
+           &amp;&amp; len v == 1 + len bk##a11n
+           &amp;&amp; lqdc##$select##GHC.Internal.Types.:##1 v == x##a11m
+           &amp;&amp; lqdc##$select##GHC.Internal.Types.:##2 v == bk##a11n
+           &amp;&amp; tail v == bk##a11n}</span><span class='hs-layout'>(</span></a><a class=annot href="#"><span class=annottext>{v : a | v == x##a11m}</span><span class='hs-varid'>x</span></a><span class='hs-conop'>:</span><a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11n
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a><span class='hs-layout'>)</span><span class='hs-layout'>)</span> <span class='hs-comment'>-</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v &gt;= 0}</span><span class='hs-varid'>phi</span></a> <a class=annot href="#"><span class=annottext>{v : (Queue.Queue a) | bk v == bk##a11n}</span><span class='hs-layout'>(</span></a><span class='hs-conid'>Queue</span> <a class=annot href="#"><span class=annottext>{v : [a] | len v &gt;= 0}</span><span class='hs-varid'>fr</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11n
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a><span class='hs-layout'>)</span>
+<span class=hs-linenum>105: </span>    <span class='hs-comment'>-- using the definitions of makeQueueT and makeQueue </span>
+<span class=hs-linenum>106: </span>    <span class='hs-varop'>===</span> <a class=annot href="#"><span class=annottext>GHC.Internal.Types.Int</span><span class='hs-num'>1</span></a> <span class='hs-varop'>+</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v &gt;= 0}</span><span class='hs-varid'>phi</span></a> <a class=annot href="#"><span class=annottext>(Queue.Queue a)</span><span class='hs-layout'>(</span></a><span class='hs-conid'>Queue</span> <a class=annot href="#"><span class=annottext>{v : [a] | len v &gt;= 0}</span><span class='hs-varid'>fr</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == : x##a11m bk##a11n
+           &amp;&amp; head v == x##a11m
+           &amp;&amp; len v == 1 + len bk##a11n
+           &amp;&amp; lqdc##$select##GHC.Internal.Types.:##1 v == x##a11m
+           &amp;&amp; lqdc##$select##GHC.Internal.Types.:##2 v == bk##a11n
+           &amp;&amp; tail v == bk##a11n}</span><span class='hs-layout'>(</span></a><a class=annot href="#"><span class=annottext>{v : a | v == x##a11m}</span><span class='hs-varid'>x</span></a><span class='hs-conop'>:</span><a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11n
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a><span class='hs-layout'>)</span><span class='hs-layout'>)</span> <span class='hs-comment'>-</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v &gt;= 0}</span><span class='hs-varid'>phi</span></a> <a class=annot href="#"><span class=annottext>{v : (Queue.Queue a) | bk v == bk##a11n}</span><span class='hs-layout'>(</span></a><span class='hs-conid'>Queue</span> <a class=annot href="#"><span class=annottext>{v : [a] | len v &gt;= 0}</span><span class='hs-varid'>fr</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11n
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a><span class='hs-layout'>)</span>
+<span class=hs-linenum>107: </span>    <span class='hs-comment'>-- using the definition of phi (Queue fr bk) </span>
+<span class=hs-linenum>108: </span>    <span class='hs-varop'>===</span> <a class=annot href="#"><span class=annottext>GHC.Internal.Types.Int</span><span class='hs-num'>1</span></a> <span class='hs-varop'>+</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v &gt;= 0}</span><span class='hs-varid'>length</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == : x##a11m bk##a11n
+           &amp;&amp; head v == x##a11m
+           &amp;&amp; len v == 1 + len bk##a11n
+           &amp;&amp; lqdc##$select##GHC.Internal.Types.:##1 v == x##a11m
+           &amp;&amp; lqdc##$select##GHC.Internal.Types.:##2 v == bk##a11n
+           &amp;&amp; tail v == bk##a11n}</span><span class='hs-layout'>(</span></a><a class=annot href="#"><span class=annottext>{v : a | v == x##a11m}</span><span class='hs-varid'>x</span></a><span class='hs-conop'>:</span><a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11n
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a><span class='hs-layout'>)</span> <span class='hs-comment'>-</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v == len bk##a11n
+                              &amp;&amp; v == length bk##a11n
+                              &amp;&amp; v &gt;= 0}</span><span class='hs-varid'>length</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11n
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a>
+<span class=hs-linenum>109: </span>    <span class='hs-comment'>-- length (x:bk) = 1 + length bk</span>
+<span class=hs-linenum>110: </span>    <span class='hs-varop'>===</span> <a class=annot href="#"><span class=annottext>GHC.Internal.Types.Int</span><span class='hs-num'>1</span></a> <span class='hs-varop'>+</span> <a class=annot href="#"><span class=annottext>GHC.Internal.Types.Int</span><span class='hs-num'>1</span></a> <span class='hs-varop'>+</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v == len bk##a11n
+                              &amp;&amp; v == length bk##a11n
+                              &amp;&amp; v &gt;= 0}</span><span class='hs-varid'>length</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11n
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a> <span class='hs-comment'>-</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v == len bk##a11n
+                              &amp;&amp; v == length bk##a11n
+                              &amp;&amp; v &gt;= 0}</span><span class='hs-varid'>length</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11n
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a>
+<span class=hs-linenum>111: </span>    <span class='hs-varop'>===</span> <a class=annot href="#"><span class=annottext>GHC.Internal.Types.Int</span><span class='hs-num'>2</span></a>   <span class='hs-comment'>-- &lt;= 2</span>
+<span class=hs-linenum>112: </span>    <span class='hs-varop'>***</span> <a class=annot href="#"><span class=annottext>{v : Language.Haskell.Liquid.ProofCombinators.QED | not (isAdmit v)
+                                                    &amp;&amp; v == QED}</span><span class='hs-conid'>QED</span></a>
+<span class=hs-linenum>113: </span>
+<span class=hs-linenum>114: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>ple</span> <span class='hs-varid'>dequeueP</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum>115: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>dequeueP</span> <span class='hs-keyglyph'>::</span> <span class='hs-varid'>q</span><span class='hs-conop'>:</span><span class='hs-keyword'>{Queue a | len (fr q) &gt; 0}</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-keyword'>{dequeueT q + phi (dequeue q) - phi q &lt;= 1}</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum>116: </span><span class='hs-definition'>dequeueP</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Queue</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Proof</span>
+<span class=hs-linenum>117: </span><a class=annot href="#"><span class=annottext>forall a .
+x1:{q : (Queue.Queue a) | len (fr q) &gt; 0} -&gt; {VV : () | (dequeueT x1 + phi (dequeue x1)) - phi x1 &lt;= 1}</span><span class='hs-definition'>dequeueP</span></a> <span class='hs-layout'>(</span><span class='hs-conid'>Queue</span> <span class='hs-keyglyph'>[</span><span class='hs-varid'>x</span><span class='hs-keyglyph'>]</span> <span class='hs-varid'>bk</span><span class='hs-layout'>)</span>
+<span class=hs-linenum>118: </span>    <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v &gt;= 1}</span><span class='hs-varid'>dequeueT</span></a> <a class=annot href="#"><span class=annottext>{v : (Queue.Queue a) | bk v == bk##a11y}</span><span class='hs-layout'>(</span></a><span class='hs-conid'>Queue</span> <a class=annot href="#"><span class=annottext>{v : [a] | head v == x##a11x
+           &amp;&amp; lqdc##$select##GHC.Internal.Types.:##1 v == x##a11x}</span><span class='hs-keyglyph'>[</span></a><a class=annot href="#"><span class=annottext>{v : a | v == x##a11x}</span><span class='hs-varid'>x</span></a><span class='hs-keyglyph'>]</span> <a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11y
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a><span class='hs-layout'>)</span> <span class='hs-varop'>+</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v &gt;= 0}</span><span class='hs-varid'>phi</span></a> <a class=annot href="#"><span class=annottext>(Queue.Queue a)</span><span class='hs-layout'>(</span></a><span class='hs-varid'>dequeue</span> <a class=annot href="#"><span class=annottext>{v : (Queue.Queue a) | bk v == bk##a11y}</span><span class='hs-layout'>(</span></a><span class='hs-conid'>Queue</span> <a class=annot href="#"><span class=annottext>{v : [a] | head v == x##a11x
+           &amp;&amp; lqdc##$select##GHC.Internal.Types.:##1 v == x##a11x}</span><span class='hs-keyglyph'>[</span></a><a class=annot href="#"><span class=annottext>{v : a | v == x##a11x}</span><span class='hs-varid'>x</span></a><span class='hs-keyglyph'>]</span> <a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11y
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a><span class='hs-layout'>)</span><span class='hs-layout'>)</span> <span class='hs-comment'>-</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v &gt;= 0}</span><span class='hs-varid'>phi</span></a> <a class=annot href="#"><span class=annottext>{v : (Queue.Queue a) | bk v == bk##a11y}</span><span class='hs-layout'>(</span></a><span class='hs-conid'>Queue</span> <a class=annot href="#"><span class=annottext>{v : [a] | head v == x##a11x
+           &amp;&amp; lqdc##$select##GHC.Internal.Types.:##1 v == x##a11x}</span><span class='hs-keyglyph'>[</span></a><a class=annot href="#"><span class=annottext>{v : a | v == x##a11x}</span><span class='hs-varid'>x</span></a><span class='hs-keyglyph'>]</span> <a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11y
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a><span class='hs-layout'>)</span>
+<span class=hs-linenum>119: </span>    <span class='hs-comment'>-- using the definitions of dequeueT and dequeue</span>
+<span class=hs-linenum>120: </span>    <span class='hs-varop'>===</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v &gt;= 1}</span><span class='hs-varid'>makeQueueT</span></a> <a class=annot href="#"><span class=annottext>{VV : forall a &lt; :: a a -&gt; Bool&gt;.
+      {v : [a]&lt;\x4 _ -&gt; a&lt;p x4&gt;&gt; | v == []
+                                   &amp;&amp; len v == 0} | VV == []}</span><span class='hs-conid'>[]</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11y
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a> <span class='hs-varop'>+</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v &gt;= 0}</span><span class='hs-varid'>phi</span></a> <a class=annot href="#"><span class=annottext>(Queue.Queue a)</span><span class='hs-layout'>(</span></a><span class='hs-varid'>makeQueue</span> <a class=annot href="#"><span class=annottext>{VV : forall a &lt; :: a a -&gt; Bool&gt;.
+      {v : [a]&lt;\x4 _ -&gt; a&lt;p x4&gt;&gt; | v == []
+                                   &amp;&amp; len v == 0} | VV == []}</span><span class='hs-conid'>[]</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11y
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a><span class='hs-layout'>)</span> <span class='hs-comment'>-</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v &gt;= 0}</span><span class='hs-varid'>phi</span></a> <a class=annot href="#"><span class=annottext>{v : (Queue.Queue a) | bk v == bk##a11y}</span><span class='hs-layout'>(</span></a><span class='hs-conid'>Queue</span> <a class=annot href="#"><span class=annottext>{v : [a] | head v == x##a11x
+           &amp;&amp; lqdc##$select##GHC.Internal.Types.:##1 v == x##a11x}</span><span class='hs-keyglyph'>[</span></a><a class=annot href="#"><span class=annottext>{v : a | v == x##a11x}</span><span class='hs-varid'>x</span></a><span class='hs-keyglyph'>]</span> <a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11y
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a><span class='hs-layout'>)</span>
+<span class=hs-linenum>121: </span>    <span class='hs-comment'>-- using the definitions of makeQueueT and makeQueue</span>
+<span class=hs-linenum>122: </span>    <span class='hs-varop'>===</span> <a class=annot href="#"><span class=annottext>GHC.Internal.Types.Int</span><span class='hs-num'>1</span></a> <span class='hs-varop'>+</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v == len bk##a11y
+                              &amp;&amp; v == length bk##a11y
+                              &amp;&amp; v &gt;= 0}</span><span class='hs-varid'>length</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11y
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a> <span class='hs-varop'>+</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v &gt;= 0}</span><span class='hs-varid'>phi</span></a> <a class=annot href="#"><span class=annottext>(Queue.Queue a)</span><span class='hs-layout'>(</span></a><span class='hs-conid'>Queue</span> <a class=annot href="#"><span class=annottext>{v : [a] | v == reverse bk##a11y
+           &amp;&amp; len v == len bk##a11y}</span><span class='hs-layout'>(</span></a><span class='hs-varid'>reverse</span> <a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11y
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a><span class='hs-layout'>)</span> <a class=annot href="#"><span class=annottext>{VV : forall a &lt; :: a a -&gt; Bool&gt;.
+      {v : [a]&lt;\x4 _ -&gt; a&lt;p x4&gt;&gt; | v == []
+                                   &amp;&amp; len v == 0} | VV == []}</span><span class='hs-conid'>[]</span></a><span class='hs-layout'>)</span> <span class='hs-comment'>-</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v &gt;= 0}</span><span class='hs-varid'>phi</span></a> <a class=annot href="#"><span class=annottext>{v : (Queue.Queue a) | bk v == bk##a11y}</span><span class='hs-layout'>(</span></a><span class='hs-conid'>Queue</span> <a class=annot href="#"><span class=annottext>{v : [a] | head v == x##a11x
+           &amp;&amp; lqdc##$select##GHC.Internal.Types.:##1 v == x##a11x}</span><span class='hs-keyglyph'>[</span></a><a class=annot href="#"><span class=annottext>{v : a | v == x##a11x}</span><span class='hs-varid'>x</span></a><span class='hs-keyglyph'>]</span> <a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11y
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a><span class='hs-layout'>)</span>
+<span class=hs-linenum>123: </span>    <span class='hs-comment'>-- using the definition of phi</span>
+<span class=hs-linenum>124: </span>    <span class='hs-varop'>===</span> <a class=annot href="#"><span class=annottext>GHC.Internal.Types.Int</span><span class='hs-num'>1</span></a> <span class='hs-varop'>+</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v == len bk##a11y
+                              &amp;&amp; v == length bk##a11y
+                              &amp;&amp; v &gt;= 0}</span><span class='hs-varid'>length</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11y
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a> <span class='hs-varop'>+</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v &gt;= 0}</span><span class='hs-varid'>length</span></a> <a class=annot href="#"><span class=annottext>{VV : forall a &lt; :: a a -&gt; Bool&gt;.
+      {v : [a]&lt;\x4 _ -&gt; a&lt;p x4&gt;&gt; | v == []
+                                   &amp;&amp; len v == 0} | VV == []}</span><span class='hs-conid'>[]</span></a> <span class='hs-comment'>-</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v == len bk##a11y
+                              &amp;&amp; v == length bk##a11y
+                              &amp;&amp; v &gt;= 0}</span><span class='hs-varid'>length</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11y
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a>
+<span class=hs-linenum>125: </span>    <span class='hs-comment'>-- length [] = 0</span>
+<span class=hs-linenum>126: </span>    <span class='hs-varop'>===</span> <a class=annot href="#"><span class=annottext>GHC.Internal.Types.Int</span><span class='hs-num'>1</span></a>   <span class='hs-comment'>-- &lt;= 1</span>
+<span class=hs-linenum>127: </span>    <span class='hs-varop'>***</span> <a class=annot href="#"><span class=annottext>{v : Language.Haskell.Liquid.ProofCombinators.QED | not (isAdmit v)
+                                                    &amp;&amp; v == QED}</span><span class='hs-conid'>QED</span></a>
+<span class=hs-linenum>128: </span><span class='hs-definition'>dequeueP</span> <span class='hs-layout'>(</span><span class='hs-conid'>Queue</span> <span class='hs-layout'>(</span><span class='hs-varid'>x</span><span class='hs-conop'>:</span><span class='hs-varid'>fr</span><span class='hs-layout'>)</span> <span class='hs-varid'>bk</span><span class='hs-layout'>)</span> 
+<span class=hs-linenum>129: </span>    <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v &gt;= 1}</span><span class='hs-varid'>dequeueT</span></a> <a class=annot href="#"><span class=annottext>{v : (Queue.Queue a) | bk v == bk##a11y}</span><span class='hs-layout'>(</span></a><span class='hs-conid'>Queue</span> <a class=annot href="#"><span class=annottext>{v : [a] | head v == x##a11x
+           &amp;&amp; lqdc##$select##GHC.Internal.Types.:##1 v == x##a11x}</span><span class='hs-layout'>(</span></a><a class=annot href="#"><span class=annottext>{v : a | v == x##a11x}</span><span class='hs-varid'>x</span></a><span class='hs-conop'>:</span><a class=annot href="#"><span class=annottext>{v : [a] | len v &gt;= 0}</span><span class='hs-varid'>fr</span></a><span class='hs-layout'>)</span> <a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11y
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a><span class='hs-layout'>)</span> <span class='hs-varop'>+</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v &gt;= 0}</span><span class='hs-varid'>phi</span></a> <a class=annot href="#"><span class=annottext>(Queue.Queue a)</span><span class='hs-layout'>(</span></a><span class='hs-varid'>dequeue</span> <a class=annot href="#"><span class=annottext>{v : (Queue.Queue a) | bk v == bk##a11y}</span><span class='hs-layout'>(</span></a><span class='hs-conid'>Queue</span> <a class=annot href="#"><span class=annottext>{v : [a] | head v == x##a11x
+           &amp;&amp; lqdc##$select##GHC.Internal.Types.:##1 v == x##a11x}</span><span class='hs-layout'>(</span></a><a class=annot href="#"><span class=annottext>{v : a | v == x##a11x}</span><span class='hs-varid'>x</span></a><span class='hs-conop'>:</span><a class=annot href="#"><span class=annottext>{v : [a] | len v &gt;= 0}</span><span class='hs-varid'>fr</span></a><span class='hs-layout'>)</span> <a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11y
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a><span class='hs-layout'>)</span><span class='hs-layout'>)</span> <span class='hs-comment'>-</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v &gt;= 0}</span><span class='hs-varid'>phi</span></a> <a class=annot href="#"><span class=annottext>{v : (Queue.Queue a) | bk v == bk##a11y}</span><span class='hs-layout'>(</span></a><span class='hs-conid'>Queue</span> <a class=annot href="#"><span class=annottext>{v : [a] | head v == x##a11x
+           &amp;&amp; lqdc##$select##GHC.Internal.Types.:##1 v == x##a11x}</span><span class='hs-layout'>(</span></a><a class=annot href="#"><span class=annottext>{v : a | v == x##a11x}</span><span class='hs-varid'>x</span></a><span class='hs-conop'>:</span><a class=annot href="#"><span class=annottext>{v : [a] | len v &gt;= 0}</span><span class='hs-varid'>fr</span></a><span class='hs-layout'>)</span> <a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11y
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a><span class='hs-layout'>)</span>
+<span class=hs-linenum>130: </span>    <span class='hs-varop'>===</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v &gt;= 1}</span><span class='hs-varid'>makeQueueT</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | len v &gt;= 0}</span><span class='hs-varid'>fr</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11y
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a> <span class='hs-varop'>+</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v &gt;= 0}</span><span class='hs-varid'>phi</span></a> <a class=annot href="#"><span class=annottext>(Queue.Queue a)</span><span class='hs-layout'>(</span></a><span class='hs-varid'>makeQueue</span> <a class=annot href="#"><span class=annottext>{v : [a] | len v &gt;= 0}</span><span class='hs-varid'>fr</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11y
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a><span class='hs-layout'>)</span> <span class='hs-comment'>-</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v &gt;= 0}</span><span class='hs-varid'>phi</span></a> <a class=annot href="#"><span class=annottext>{v : (Queue.Queue a) | bk v == bk##a11y}</span><span class='hs-layout'>(</span></a><span class='hs-conid'>Queue</span> <a class=annot href="#"><span class=annottext>{v : [a] | head v == x##a11x
+           &amp;&amp; lqdc##$select##GHC.Internal.Types.:##1 v == x##a11x}</span><span class='hs-layout'>(</span></a><a class=annot href="#"><span class=annottext>{v : a | v == x##a11x}</span><span class='hs-varid'>x</span></a><span class='hs-conop'>:</span><a class=annot href="#"><span class=annottext>{v : [a] | len v &gt;= 0}</span><span class='hs-varid'>fr</span></a><span class='hs-layout'>)</span> <a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11y
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a><span class='hs-layout'>)</span>
+<span class=hs-linenum>131: </span>    <span class='hs-comment'>-- using the definitions of makeQueueT and makeQueue</span>
+<span class=hs-linenum>132: </span>    <span class='hs-varop'>===</span> <a class=annot href="#"><span class=annottext>GHC.Internal.Types.Int</span><span class='hs-num'>1</span></a> <span class='hs-varop'>+</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v &gt;= 0}</span><span class='hs-varid'>phi</span></a> <a class=annot href="#"><span class=annottext>{v : (Queue.Queue a) | bk v == bk##a11y}</span><span class='hs-layout'>(</span></a><span class='hs-conid'>Queue</span> <a class=annot href="#"><span class=annottext>{v : [a] | len v &gt;= 0}</span><span class='hs-varid'>fr</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11y
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a><span class='hs-layout'>)</span> <span class='hs-comment'>-</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v &gt;= 0}</span><span class='hs-varid'>phi</span></a> <a class=annot href="#"><span class=annottext>{v : (Queue.Queue a) | bk v == bk##a11y}</span><span class='hs-layout'>(</span></a><span class='hs-conid'>Queue</span> <a class=annot href="#"><span class=annottext>{v : [a] | head v == x##a11x
+           &amp;&amp; lqdc##$select##GHC.Internal.Types.:##1 v == x##a11x}</span><span class='hs-layout'>(</span></a><a class=annot href="#"><span class=annottext>{v : a | v == x##a11x}</span><span class='hs-varid'>x</span></a><span class='hs-conop'>:</span><a class=annot href="#"><span class=annottext>{v : [a] | len v &gt;= 0}</span><span class='hs-varid'>fr</span></a><span class='hs-layout'>)</span> <a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11y
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a><span class='hs-layout'>)</span>
+<span class=hs-linenum>133: </span>    <span class='hs-comment'>-- using the definition of phi (Queue fr bk)</span>
+<span class=hs-linenum>134: </span>    <span class='hs-varop'>===</span> <a class=annot href="#"><span class=annottext>GHC.Internal.Types.Int</span><span class='hs-num'>1</span></a> <span class='hs-varop'>+</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v == len bk##a11y
+                              &amp;&amp; v == length bk##a11y
+                              &amp;&amp; v &gt;= 0}</span><span class='hs-varid'>length</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11y
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a> <span class='hs-comment'>-</span> <a class=annot href="#"><span class=annottext>{v : GHC.Internal.Types.Int | v == len bk##a11y
+                              &amp;&amp; v == length bk##a11y
+                              &amp;&amp; v &gt;= 0}</span><span class='hs-varid'>length</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == bk##a11y
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>bk</span></a>
+<span class=hs-linenum>135: </span>    <span class='hs-varop'>===</span> <a class=annot href="#"><span class=annottext>GHC.Internal.Types.Int</span><span class='hs-num'>1</span></a>   <span class='hs-comment'>-- &lt;= 1</span>
+<span class=hs-linenum>136: </span>    <span class='hs-varop'>***</span> <a class=annot href="#"><span class=annottext>{v : Language.Haskell.Liquid.ProofCombinators.QED | not (isAdmit v)
+                                                    &amp;&amp; v == QED}</span><span class='hs-conid'>QED</span></a>
+<span class=hs-linenum>137: </span>
+<span class=hs-linenum>138: </span>    </pre>
+</body>
+</html>

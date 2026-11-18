@@ -1,0 +1,39 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+<title>Braun.hs</title>
+</head>
+<head>
+<link type='text/css' rel='stylesheet' href='syntax.css' />
+</head>
+
+<body>
+<hr>
+Put mouse over identifiers to see inferred types
+<pre><span class=hs-linenum> 1: </span><a class=annot href="#"><span class=annottext>{VV##660 : GHC.Internal.Types.Module | $k_##661}</span><span class='hs-comment'>{-# OPTIONS_GHC -fplugin=LiquidHaskell #-}</span></a>
+<span class=hs-linenum> 2: </span><span class='hs-comment'>--{-@ LIQUID "--ple" @-}</span>
+<span class=hs-linenum> 3: </span><span class='hs-comment'>--{-@ LIQUID "--no-termination" @-}</span>
+<span class=hs-linenum> 4: </span><span class='hs-comment'>--{-@ LIQUID "--no-termination" @-}</span>
+<span class=hs-linenum> 5: </span>
+<span class=hs-linenum> 6: </span><span class='hs-keyword'>module</span> <span class='hs-conid'>Braun</span> <span class='hs-keyword'>where</span> 
+<span class=hs-linenum> 7: </span>
+<span class=hs-linenum> 8: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>inline</span> <span class='hs-varid'>notZero</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum> 9: </span><span class='hs-definition'>notZero</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Int</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Bool</span>
+<span class=hs-linenum>10: </span><a class=annot href="#"><span class=annottext>lq_tmp$x##924:GHC.Internal.Types.Int -&gt; {VV : GHC.Internal.Types.Bool | VV &lt;=&gt; lq_tmp$x##924 /= 0}</span><span class='hs-definition'>notZero</span></a> <a class=annot href="#"><span class=annottext>GHC.Internal.Types.Int</span><span class='hs-varid'>x</span></a> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##950 : GHC.Internal.Types.Int | lq_tmp$x##950 == x##aEo}</span><span class='hs-varid'>x</span></a> <span class='hs-varop'>/=</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##929 : GHC.Internal.Types.Int | lq_tmp$x##929 == (lq_anf$##7205759403792798004##d192 : int)}</span><span class='hs-num'>0</span></a> 
+<span class=hs-linenum>11: </span>
+<span class=hs-linenum>12: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>saveDiv</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Int</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-varid'>d</span><span class='hs-conop'>:</span><span class='hs-keyword'>{Int | notZero d}</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum>13: </span><span class='hs-definition'>saveDiv</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Int</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span>
+<span class=hs-linenum>14: </span><a class=annot href="#"><span class=annottext>lq_tmp$x##1054:GHC.Internal.Types.Int -&gt; lq_tmp$x##1055:{d : GHC.Internal.Types.Int | d /= 0} -&gt; GHC.Internal.Types.Int</span><span class='hs-definition'>saveDiv</span></a> <a class=annot href="#"><span class=annottext>GHC.Internal.Types.Int</span><span class='hs-varid'>x</span></a> <a class=annot href="#"><span class=annottext>{d : GHC.Internal.Types.Int | d /= 0}</span><span class='hs-varid'>y</span></a> <span class='hs-keyglyph'>=</span> <span class='hs-varid'>div</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1072 : GHC.Internal.Types.Int | lq_tmp$x##1072 == x##aR0}</span><span class='hs-varid'>x</span></a> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1073 : GHC.Internal.Types.Int | lq_tmp$x##1073 == y##aR1
+                                           &amp;&amp; lq_tmp$x##1073 /= 0}</span><span class='hs-varid'>y</span></a>
+<span class=hs-linenum>15: </span>
+<span class=hs-linenum>16: </span><span class='hs-definition'>allEven</span> <span class='hs-keyglyph'>::</span> <span class='hs-keyglyph'>[</span><span class='hs-conid'>Int</span><span class='hs-keyglyph'>]</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Bool</span>
+<span class=hs-linenum>17: </span><a class=annot href="#"><span class=annottext>lq_tmp$x##954:[GHC.Internal.Types.Int] -&gt; GHC.Internal.Types.Bool</span><span class='hs-definition'>allEven</span></a> <span class='hs-conid'>[]</span> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{lq_tmp$x##980 : GHC.Internal.Types.Bool | lq_tmp$x##980
+                                           &amp;&amp; lq_tmp$x##980 == GHC.Internal.Types.True}</span><span class='hs-conid'>True</span></a>
+<span class=hs-linenum>18: </span><span class='hs-definition'>allEven</span> <span class='hs-layout'>(</span><span class='hs-varid'>x</span><span class='hs-conop'>:</span><span class='hs-varid'>xs</span><span class='hs-layout'>)</span> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>GHC.Internal.Types.Bool</span><span class='hs-varid'>even</span></a> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1028 : GHC.Internal.Types.Int | lq_tmp$x##1028 == x##aWq}</span><span class='hs-varid'>x</span></a> <span class='hs-varop'>&amp;&amp;</span> <a class=annot href="#"><span class=annottext>GHC.Internal.Types.Bool</span><span class='hs-varid'>allEven</span></a> <a class=annot href="#"><span class=annottext>{lq_tmp$x##1042 : [GHC.Internal.Types.Int] | lq_tmp$x##1042 == xs##aWr
+                                             &amp;&amp; GHC.Types_LHAssumptions.len lq_tmp$x##1042 &gt;= 0}</span><span class='hs-varid'>xs</span></a>
+<span class=hs-linenum>19: </span>
+<span class=hs-linenum>20: </span>
+<span class=hs-linenum>21: </span><span class='hs-keyword'>data</span> <span class='hs-conid'>Tree</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>=</span> <span class='hs-conid'>Node</span> <span class='hs-varid'>a</span> <span class='hs-layout'>(</span><span class='hs-conid'>Tree</span> <span class='hs-varid'>a</span><span class='hs-layout'>)</span> <span class='hs-layout'>(</span><span class='hs-conid'>Tree</span> <span class='hs-varid'>a</span><span class='hs-layout'>)</span> <span class='hs-keyglyph'>|</span> <span class='hs-conid'>Nil</span>
+</pre>
+</body>
+</html>
